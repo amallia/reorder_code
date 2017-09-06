@@ -244,6 +244,7 @@ void QueryProcessing::operator()(const char* queryLog, const int buckets, const 
 	cout << "################################################################" << endl;
 
 	/* perform query processing for each query */
+	int total_seek = 0;
 	while( qn++ < 1000) {
 		++queriesFIterator;
 		if(queriesFIterator == logManager.end()) {
@@ -264,7 +265,6 @@ void QueryProcessing::operator()(const char* queryLog, const int buckets, const 
 		for(int i=0; i<word_l.size(); i++){
 			cout << word_l[i] << " ";
 		}
-		cout << endl;
 
 		// ########################################################################################
 		// Initializing (opening) list (lps=list pointer) structures based on standard index
@@ -283,7 +283,11 @@ void QueryProcessing::operator()(const char* queryLog, const int buckets, const 
 		p.start(CONSTS::ALLQS); 		// Start measuring qp time - NOTE: that OTF BMG is already measured if DocID-Oriented Block-Max structures are used (DOCIDBLOCKMAX is defined)
 
 		// // various default parameters for running algorithms
-		wand.anotherAnd(lps, topk, res);
+		int seek = 0;
+		wand.anotherAnd(lps, topk, res, seek);
+		total_seek += seek;
+		cout << "number of get nextGEQ: " << seek;
+		cout << endl;
 		// // wand(lps, topk, 0.0f);
 		// wand(lps, topk, res, 0.0f);
 		// //wand(lps, topk, res, 0.0f, 0);
@@ -299,6 +303,7 @@ void QueryProcessing::operator()(const char* queryLog, const int buckets, const 
 		// //float score = resultsHeap.getV()[topk-1].score;	//     PriorityArray<QpResult>
 
 	} // end of Query Processing for the current Query
+	cout << ", total number of nextGEQ: " << total_seek << "\n";
 }
 
 /* Print reports

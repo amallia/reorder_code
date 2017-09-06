@@ -57,7 +57,7 @@ void ExhaustiveAnd::operator() (lptrArray& lps, const int topK, QpResult* res) {
 }
 
 
-void ExhaustiveAnd::anotherAnd(lptrArray& lps, const int topK, QpResult* res) {
+void ExhaustiveAnd::anotherAnd(lptrArray& lps, const int topK, QpResult* res, int& seek_counter) {
 	// initial sorting by did
 	lps.sortByListLen();
 
@@ -80,6 +80,7 @@ void ExhaustiveAnd::anotherAnd(lptrArray& lps, const int topK, QpResult* res) {
 		for (; i<lps.size(); ++i){
 			if (lps[i]->did < candidateDid) {
 				lps[i]->did = lps[i]->nextGEQ( candidateDid );
+				seek_counter++;
 			}
 			if(lps[i]->did != candidateDid){
 				nextCandidate = lps[i]->did;
@@ -102,8 +103,10 @@ void ExhaustiveAnd::anotherAnd(lptrArray& lps, const int topK, QpResult* res) {
 			}
 
 	      	candidateDid = lps[0]->nextGEQ(candidateDid + 1);
+	      	seek_counter++;
 	    } else {  // move the shortest list in the did where the mismatch occured.
 	      	candidateDid = lps[0]->nextGEQ(nextCandidate);
+	      	seek_counter++;
 	    }
 	} //end while
 

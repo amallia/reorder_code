@@ -10,7 +10,7 @@ private:
 public:
 	ExhaustiveAnd(unsigned int* pgs) : pages(pgs) {}
 	void operator()(lptrArray& lps, const int topk, QpResult* r);
-	void anotherAnd(lptrArray& lps, const int topk, QpResult* r);
+	void anotherAnd(lptrArray& lps, const int topk, QpResult* r, int& seek_counter);
 };
 
 #endif /* AND_H_ */
