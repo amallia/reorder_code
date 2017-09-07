@@ -57,7 +57,7 @@ void ExhaustiveAnd::operator() (lptrArray& lps, const int topK, QpResult* res) {
 }
 
 
-void ExhaustiveAnd::anotherAnd(lptrArray& lps, const int topK, QpResult* res, int& seek_counter) {
+void ExhaustiveAnd::anotherAnd(lptrArray& lps, const int topK, QpResult* res, long long& seek_counter) {
 	// initial sorting by did
 	lps.sortByListLen();
 
