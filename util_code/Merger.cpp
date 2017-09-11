@@ -131,7 +131,7 @@ void Merger::generateDeltaGraph(){
   writeDeltaIndex();
 }
 
-void Merger::verifyGraph(){
+void Merger::verifyGraph(string lex_path, string index_path){
   unsigned did;
   unsigned length;
   unsigned compressedSize;
@@ -141,13 +141,13 @@ void Merger::verifyGraph(){
   int breaker = 0;
 
   FILE * lexFile;
-  lexFile = fopen(this->graphLex.c_str(), "r");
+  lexFile = fopen(lex_path.c_str(), "r");
   if( lexFile == NULL) {
-    cout << "Problem! The file: " << this->graphLex << " could not be opened!" << endl;
+    cout << "Problem! The file: " << lex_path << " could not be opened!" << endl;
     exit(0);
   }
 
-  FILE* IndexFile = fopen(this->graphIndex.c_str(),"r");
+  FILE* IndexFile = fopen(index_path.c_str(),"r");
   if( IndexFile == NULL) {
     cout << "Problem! The file: " << this->graphIndex << " could not be opened!" << endl;
     exit(0);
@@ -184,7 +184,8 @@ void Merger::verifyGraph(){
     //   cout << neighbors[i] << " ";
     // }
     // cout << "\n";
-
+    delete[] compressedList;
+    delete[] uncompressedList;
     breaker++;
     if(breaker == 10){
       break;
@@ -196,6 +197,65 @@ void Merger::verifyGraph(){
   fclose(IndexFile);
 }
 
+
+void Merger::verifyDeltaGraph (string lex_path, string index_path) {
+  cout << "Loading Delta Compressded Graphs\n";
+  uint did;
+  uint length;
+  uint compressedSize;
+  unsigned long offset;
+
+  FILE * lexFile;
+  lexFile = fopen(lex_path.c_str(), "r");
+  if( lexFile == NULL){
+    cout << "Problem! The file: " << lex_path << " could not be opened!" << endl;
+    exit(0);
+  }
+
+  FILE* IndexFile = fopen(index_path.c_str(),"r");
+  if( IndexFile == NULL) {
+    cout << "Problem! The file: " << index_path << " could not be opened!" << endl;
+    exit(0);
+  }
+
+  // for(uint i = 0; i <= this->numOfDocs; i++){
+  //   unsigned char * p = NULL;
+  //   docNode t(p, 0);
+  //   this->compressedGraphNodes.push_back(t);
+  // }
+
+  while(fscanf(lexFile, "%u %u %u %lu\n", &did, &length, &compressedSize, &offset)!=EOF){
+    // cout << did << " " << length << " " << compressedSize << " " << offset << endl;
+    unsigned char * cp = new unsigned char[compressedSize];
+    fread(cp, 1, compressedSize, IndexFile);
+
+    uint * uncompressedList = new unsigned[length];
+    decompressionVbytesInt(cp, uncompressedList, length);
+    vector<uint> dids;
+    dids.push_back(uncompressedList[0]);
+    // cout << uncompressedList[0]<<" ";
+    for(uint i = 1; i < length; ++i){
+      // cout << uncompressedList[i]<<" ";
+      dids.push_back( dids.back() + uncompressedList[i] );
+    }
+    // cout << endl;
+    // cout << dids.size() << endl;
+    for(int i = 0; i < dids.size(); i++){
+      cout << dids[i] << " ";
+    }
+    cout << endl;
+    delete[] cp;
+    delete[] uncompressedList;
+    // if(did == 10){
+    //   break;
+    // }
+  }
+
+  cout << index_path << " Verification Done\n";
+  fclose(lexFile);
+  fclose(IndexFile);
+
+}
 
 void Merger::writeDeltaIndex(){
   /*dump buffer to file*/
@@ -373,6 +433,56 @@ void Merger::getUrlNeighbors(){
     // cout << dids.size() << endl;
     this->urlNeighborArray[did] = dids;
   }
+}
+
+
+void Merger::WriteIndex(string lex_path, string index_path){
+  /*dump buffer to file*/
+  dumpToFile(index_path, this->compressedList.begin(), this->compressedList.end());
+  /*dump lexicon to file*/
+  FILE * lexDir = fopen(lex_path.c_str(), "w");
+  if( lexDir == NULL){
+     cout << "Problem! The file: " << this->mergedGraphLex << " could not be opened!" << endl;
+     exit(0);
+  }
+  for(int i = 0; i < didsGraph.size(); ++i){
+     fprintf(lexDir, "%u %u %u %lu\n", didsGraph[i], lengthsGraph[i], compressedSizesGraph[i], offsetsGraph[i]);
+  }
+  fclose(lexDir);
+    cout << "url delta graph generated" << endl;
+}
+
+void Merger::CompressUrlGraph(){
+  unsigned long newOffset = 0;
+  // for(int i = 1; i <= this->numDocs; i++){
+  for(int i = 1; i <= 10; i++){
+    vector<uint> dids;
+    dids = this->urlNeighborArray[i];
+
+    sort(dids.begin(), dids.end());
+
+    for(uint n = 0; n < dids.size(); n++){
+      cout << dids[n] << " ";
+    }
+    cout << endl;
+
+    for(uint n = dids.size() - 1; n >=1; n--){
+      dids[n] = dids[n] - dids[n-1];
+    }
+    // for(uint n = 0; n < dids.size(); n++){
+    //   cout << dids[n] << " ";
+    // }
+    // cout << endl;
+    
+    uint compressedSizeDelta = compressionVbytes(dids);
+    cout << i << " " << dids.size() << " " << compressedSizeDelta << " " << newOffset << endl;
+    didsGraph.push_back(i);
+    lengthsGraph.push_back(dids.size());
+    compressedSizesGraph.push_back(compressedSizeDelta);
+    offsetsGraph.push_back(newOffset);
+    newOffset += compressedSizeDelta;
+  }
+  this->WriteIndex(kUrlLex, kUrlIndex);
 }
 
 void Merger::mergeNeighbors(){
@@ -707,7 +817,8 @@ void Merger::docLengthRemap(){
    //todo output
 }
 
-void Merger::buildURLOnlyGraph(){
+void Merger::BuildURLOnlyGraph(){
    this->loadUrls();
    this->getUrlNeighbors();
+   this->CompressUrlGraph();
 }

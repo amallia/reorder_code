@@ -70,16 +70,11 @@ void ExhaustiveAnd::anotherAnd(lptrArray& lps, const int topK, QpResult* res, lo
 	int i, j, k;
 
 	while(candidateDid < CONSTS::MAXD) {
-		// set round's threshold
-		threshold = res[topK-1].score;
-		// initialize final score
-		final_score = 0.0f;
-
 		i = 0;
 		// evaluate all dids with did == smallest_did
 		for (; i<lps.size(); ++i){
 			if (lps[i]->did < candidateDid) {
-				lps[i]->did = lps[i]->nextGEQ( candidateDid );
+				lps[i]->nextGEQ( candidateDid );
 				seek_counter++;
 			}
 			if(lps[i]->did != candidateDid){
@@ -89,24 +84,24 @@ void ExhaustiveAnd::anotherAnd(lptrArray& lps, const int topK, QpResult* res, lo
 		}
 
 		if(i == lps.size()){
+			// initialize final score
+			final_score = 0.0f;
 			for (; k<lps.size(); ++k){
 				frequency = lps[k]->getFreq();
  				score = lps[k]->calcScore(frequency,pages[candidateDid]);
  				final_score += score;
 			}
 			// if calculated score more than threshold, heapify
-			if (Fcompare(final_score, threshold)==1) {
+			threshold = res[topK-1].score;
+			if ( final_score > threshold ) {
 				//PROFILER(CONSTS::HEAPIFY);
-				for (j = topK-2; (j >= 0) && (Fcompare(final_score, res[j].score)==1); j--)
+				for (j = topK-2; (j >= 0) && ( final_score > res[j].score ); j--)
 					res[j+1]=res[j];
 				res[j+1].setR(candidateDid,final_score);
 			}
-
-	      	candidateDid = lps[0]->nextGEQ(candidateDid + 1);
-	      	seek_counter++;
+	      	candidateDid ++;
 	    } else {  // move the shortest list in the did where the mismatch occured.
-	      	candidateDid = lps[0]->nextGEQ(nextCandidate);
-	      	seek_counter++;
+	      	candidateDid = nextCandidate;
 	    }
 	} //end while
 

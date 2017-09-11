@@ -119,15 +119,15 @@ namespace CONSTS {
 	// const std::string basic_table("/home/qw376/CIKM2017/PFDlexFiles/Random1kQueriesLex406Uniq");
 	// const std::string fResultLog("/home/qw376/CIKM2017/queryResult/random10");
 
-	// const std::string trecRoot("/home/qw376/CIKM2017/smallIndexURL/");
-	// const std::string doclenFileName("/home/qw376/CIKM2017/docLengthFiles/URLDocLength");
-	// const std::string basic_table("/home/qw376/CIKM2017/PFDlexFiles/URL1kQueriesLex406Uniq");
-	// const std::string fResultLog("/home/qw376/CIKM2017/queryResult/url10");
+	const std::string trecRoot("/home/qw376/CIKM2017/smallIndexURL/");
+	const std::string doclenFileName("/home/qw376/CIKM2017/docLengthFiles/URLDocLength");
+	const std::string basic_table("/home/qw376/CIKM2017/PFDlexFiles/URL1kQueriesLex406Uniq");
+	const std::string fResultLog("/home/qw376/CIKM2017/queryResult/url10");
 
-	const std::string trecRoot("/home/qw376/CIKM2017/smallIndexTSPLSHURL/");
-	const std::string doclenFileName("/home/qw376/CIKM2017/docLengthFiles/TSPLSHURLDocLength");
-	const std::string basic_table("/home/qw376/CIKM2017/PFDlexFiles/TSPLSHURL1kQueriesLex406Uniq");
-	const std::string fResultLog("/home/qw376/CIKM2017/queryResult/tsplshurl10");
+	// const std::string trecRoot("/home/qw376/CIKM2017/smallIndexTSPLSHURL/");
+	// const std::string doclenFileName("/home/qw376/CIKM2017/docLengthFiles/TSPLSHURLDocLength");
+	// const std::string basic_table("/home/qw376/CIKM2017/PFDlexFiles/TSPLSHURL1kQueriesLex406Uniq");
+	// const std::string fResultLog("/home/qw376/CIKM2017/queryResult/tsplshurl10");
 	//######dodo########
 
 	const std::string QLogPath("../QueryLog/");

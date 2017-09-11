@@ -57,6 +57,9 @@ struct comparator {
     }
 };
 
+const string kUrlLex = "/home/qw376/reorder_data/graph_index/url_lex";
+const string kUrlIndex = "/home/qw376/reorder_data/graph_index/url_index";
+
 class Merger{
 private:
 	const string graphIndex = "/home/qw376/SIGIR2017/graphIndex/graph";
@@ -125,7 +128,6 @@ public:
 	void writeMergedIndex();
 	int compressionVbytes(vector<uint> input);
 	void loadDeltaGraph();
-	void verifyGraph();
 	void mergeGraph();
 	void loadUrls();
 	void getUrlNeighbors();
@@ -154,5 +156,11 @@ public:
 	void docLengthRemap();
 
 	//url Graph
-	void buildURLOnlyGraph();
+	void BuildURLOnlyGraph();
+	void CompressUrlGraph();
+	void WriteIndex(string lex_path, string index_path);
+
+	//for verification
+	void verifyGraph(string lex_path, string index_path);
+	void verifyDeltaGraph(string lex_path, string index_path);
 };
