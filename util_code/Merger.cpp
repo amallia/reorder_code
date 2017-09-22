@@ -1,6 +1,8 @@
 #include "Merger.h"
 #include <iostream>
+#include <fstream>
 #include <algorithm>
+#include <cstring>
 using namespace std;
 
 int decompressionVbytesInt(unsigned char* input, unsigned * output, int size){
@@ -442,7 +444,7 @@ void Merger::WriteIndex(string lex_path, string index_path){
   /*dump lexicon to file*/
   FILE * lexDir = fopen(lex_path.c_str(), "w");
   if( lexDir == NULL){
-     cout << "Problem! The file: " << this->mergedGraphLex << " could not be opened!" << endl;
+     cout << "Problem! The file: " << lex_path << " could not be opened!" << endl;
      exit(0);
   }
   for(int i = 0; i < didsGraph.size(); ++i){
@@ -454,17 +456,17 @@ void Merger::WriteIndex(string lex_path, string index_path){
 
 void Merger::CompressUrlGraph(){
   unsigned long newOffset = 0;
-  // for(int i = 1; i <= this->numDocs; i++){
-  for(int i = 1; i <= 10; i++){
+  for(int i = 1; i <= this->numDocs; i++){
+  // for(int i = 1; i <= 10; i++){
     vector<uint> dids;
     dids = this->urlNeighborArray[i];
 
     sort(dids.begin(), dids.end());
 
-    for(uint n = 0; n < dids.size(); n++){
-      cout << dids[n] << " ";
-    }
-    cout << endl;
+    // for(uint n = 0; n < dids.size(); n++){
+    //   cout << dids[n] << " ";
+    // }
+    // cout << endl;
 
     for(uint n = dids.size() - 1; n >=1; n--){
       dids[n] = dids[n] - dids[n-1];
@@ -612,150 +614,6 @@ void Merger::getNewOrder(){
   }
 }
 
-void Merger::buildTermIDQueryLog(){ //the cout directly generate the output
-  this->loadLex();
-  FILE * lexFile;
-  lexFile = fopen(this->rawQuery.c_str(), "r");
-  if(lexFile == NULL){
-    cout << "Problem! The file: " << this->rawQuery << " could not be opened!" << endl; 
-  }
-  char terms[ 1024 ];
-  while(fgets(terms, sizeof terms, lexFile)!= NULL){
-    string tmp(terms);
-    // printf("%s\n", term);
-    // cout << tmp;
-    stringstream ss(tmp);
-    string buf;
-    vector<string> termIds;
-    while (ss >> buf){
-        termIds.push_back(buf);
-    }
-    for(uint i = 0; i < termIds.size(); i++){
-      unordered_map<string, LexInfo>::iterator it;
-      it = this->lexMap.find(termIds[i]);
-      if(it!=this->lexMap.end()){
-        cout << it->second.termId << " ";
-      }
-    }
-    cout << endl;
-  }
-  fclose(lexFile);
-}
-
-void Merger::buildSmallLex(){//the cout directly generate the output
-  this->loadLex();
-  FILE * lexFile;
-  lexFile = fopen(this->rawQuery.c_str(), "r");
-  if(lexFile == NULL){
-    cout << "Problem! The file: " << this->rawQuery << " could not be opened!" << endl; 
-  }
-  char term[ 1024 ];
-  while(fscanf(lexFile, "%s", term)!=EOF){
-    string tmp(term);
-    // printf("%s\n", term);
-    cout << tmp << " ";
-    unordered_map<string, LexInfo>::iterator it;
-    it = this->lexMap.find(tmp);
-    if(it!=this->lexMap.end()){
-      cout << it->second.termId << " " << it->second.listLen << " " << it->second.offset << " " << it->second.listLenInBytes << endl;
-    }
-  }
-  fclose(lexFile);
-}
-
-
-void Merger::loadLex(){
-  FILE * lexFile;
-  lexFile = fopen(this->wholeLex.c_str(), "r");
-  if(lexFile == NULL){
-    cout << "Problem! The file: " << this->wholeLex << " could not be opened!" << endl;
-  }
-
-  unsigned long offset = 0;
-  char * term;
-  term = new char[300];
-  uint termId = 0;
-  uint listLen = 0;
-  uint listLenInBytes = 0;
-  uint tmp1 = 0;
-  uint tmp2 = 0;
-  uint tmp3 = 0;
-  uint tmp4 = 0;
-  uint tmp5 = 0;
-
-  //term termID listLength totalOccurrences offset listLenBytes posOffset posListLen contOffset contListLen 
-  while(fscanf(lexFile, "%s %u %u %u %lu %u %u %u %u %u\n", term, &termId, &listLen, &tmp1, &offset, &listLenInBytes, &tmp2, &tmp3, &tmp4, &tmp5)!=EOF){
-    string termName(term);
-    // cout << termName <<" "<< termId << " " << listLen << " " << listLenInBytes << " " << offset << endl;
-    LexInfo l(termId, listLen, listLenInBytes, offset);
-    this->lexMap.insert(pair<string, LexInfo>(termName, l));
-  }
-
-  fclose(lexFile);
-}
-
-void Merger::queryTermIDSelector(){ //use the cout as output
-  this->loadLex();
-  FILE * lexFile;
-  lexFile = fopen(this->queryPool.c_str(), "r");
-  if(lexFile == NULL){
-    cout << "Problem! The file: " << this->queryPool << " could not be opened!" << endl; 
-  }
-  uint k = 0;
-  char terms[ 1024 ];
-  while(fgets(terms, sizeof terms, lexFile)!= NULL){
-    if(k%3 == 0){
-      string tmp(terms);
-      // printf("%s\n", term);
-      // cout << tmp;
-      stringstream ss(tmp);
-      string buf;
-      vector<string> termIds;
-      while (ss >> buf){
-          termIds.push_back(buf);
-      }
-      for(uint i = 0; i < termIds.size(); i++){
-        unordered_map<string, LexInfo>::iterator it;
-        it = this->lexMap.find(termIds[i]);
-        if(it!=this->lexMap.end()){
-          cout << it->second.termId << " ";
-        }
-      }
-      cout << endl;
-    }
-    // if(k == 2999){
-    if(k == 29){
-      break;
-    }
-    k++;
-  }
-  fclose(lexFile);
-}
-
-void Merger::rawQuerySelector(){ //use the cout as output
-  FILE * lexFile;
-  lexFile = fopen(this->queryPool.c_str(), "r");
-  if(lexFile == NULL){
-    cout << "Problem! The file: " << this->queryPool << " could not be opened!" << endl; 
-  }
-  uint k = 0;
-  char terms[ 1024 ];
-  // string exception = "group home in new york";
-  while(fgets(terms, sizeof terms, lexFile)!= NULL){
-    if(k%3 == 0){
-      string tmp(terms);
-      // printf("%s\n", term);
-      cout << tmp;
-    }
-    // if(k == 3000){
-    if(k == 29){
-      break;
-    }
-    k++;
-  }
-  fclose(lexFile);
-}
-
 void Merger::loadDocLength(){
     this->doclen = new unsigned int[this->MAXD];
     for(int i = 0; i < this->MAXD; i++){
@@ -821,4 +679,220 @@ void Merger::BuildURLOnlyGraph(){
    this->loadUrls();
    this->getUrlNeighbors();
    this->CompressUrlGraph();
+}
+
+/***************************************************************************
+LMMaker function implementation
+***************************************************************************/
+
+void LMMaker::buildTermIDQueryLog(){ //the cout directly generate the output
+  this->LoadLex();
+  FILE * lexFile;
+  lexFile = fopen(kRawQuery.c_str(), "r");
+  if(lexFile == NULL){
+    cout << "Problem! The file: " << kRawQuery << " could not be opened!" << endl; 
+  }
+  char terms[ 1024 ];
+  while(fgets(terms, sizeof terms, lexFile)!= NULL){
+    string tmp(terms);
+    // printf("%s\n", term);
+    // cout << tmp;
+    stringstream ss(tmp);
+    string buf;
+    vector<string> termIds;
+    while (ss >> buf){
+        termIds.push_back(buf);
+    }
+    for(uint i = 0; i < termIds.size(); i++){
+      unordered_map<string, LexInfo>::iterator it;
+      it = this->lexMap.find(termIds[i]);
+      if(it!=this->lexMap.end()){
+        cout << it->second.termId << " ";
+      }
+    }
+    cout << endl;
+  }
+  fclose(lexFile);
+}
+
+void LMMaker::queryTermIDSelector(){ //use the cout as output
+  this->LoadLex();
+  FILE * lexFile;
+  lexFile = fopen(kQueryPool.c_str(), "r");
+  if(lexFile == NULL){
+    cout << "Problem! The file: " << kQueryPool << " could not be opened!" << endl; 
+  }
+  uint k = 0;
+  char terms[ 1024 ];
+  while(fgets(terms, sizeof terms, lexFile)!= NULL){
+    if(k%3 == 0){
+      string tmp(terms);
+      // printf("%s\n", term);
+      // cout << tmp;
+      stringstream ss(tmp);
+      string buf;
+      vector<string> termIds;
+      while (ss >> buf){
+          termIds.push_back(buf);
+      }
+      for(uint i = 0; i < termIds.size(); i++){
+        unordered_map<string, LexInfo>::iterator it;
+        it = this->lexMap.find(termIds[i]);
+        if(it!=this->lexMap.end()){
+          cout << it->second.termId << " ";
+        }
+      }
+      cout << endl;
+    }
+    // if(k == 2999){
+    if(k == 29){
+      break;
+    }
+    k++;
+  }
+  fclose(lexFile);
+}
+
+void LMMaker::rawQuerySelector(){ //use the cout as output
+  FILE * lexFile;
+  lexFile = fopen(kQueryPool.c_str(), "r");
+  if(lexFile == NULL){
+    cout << "Problem! The file: " << kQueryPool << " could not be opened!" << endl; 
+  }
+  uint k = 0;
+  char terms[ 1024 ];
+  // string exception = "group home in new york";
+  while(fgets(terms, sizeof terms, lexFile)!= NULL){
+    if(k%3 == 0){
+      string tmp(terms);
+      // printf("%s\n", term);
+      cout << tmp;
+    }
+    // if(k == 3000){
+    if(k == 29){
+      break;
+    }
+    k++;
+  }
+  fclose(lexFile);
+}
+
+void LMMaker::buildSmallLex(const string input_query, const string output_lex){//the cout directly generate the output
+  this->LoadLex();
+  FILE * queryFile = fopen(input_query.c_str(), "r");
+  if(queryFile == NULL){
+    cout << "Problem! The file: " << input_query << " could not be opened!" << endl; 
+  }
+
+  FILE * lexFile = fopen(output_lex.c_str(), "w");
+  if( lexFile == NULL){
+     cout << "Problem! The file: " << output_lex << " could not be opened!" << endl;
+     exit(0);
+  }
+
+  char term[ 1024 ];
+  while(fscanf(queryFile, "%s", term)!=EOF){
+    string tmp(term);
+    // printf("%s\n", term);
+    // cout << tmp << " ";
+    fprintf(lexFile, "%s ", term);
+    unordered_map<string, LexInfo>::iterator it;
+    it = this->lexMap.find(tmp);
+    if(it!=this->lexMap.end()){
+      // cout << it->second.termId << " " << it->second.listLen << " " << it->second.offset << " " 
+      // << it->second.listLenInBytes << endl;
+      fprintf(lexFile, "%u %u %lu %u\n", it->second.termId, it->second.listLen, it->second.offset, it->second.listLenInBytes);
+    }
+  }
+  fclose(queryFile);
+  fclose(lexFile);
+}
+
+void LMMaker::LoadLex(){
+  FILE * lexFile;
+  lexFile = fopen(kWholeLex.c_str(), "r");
+  if(lexFile == NULL){
+    cout << "Problem! The file: " << kWholeLex << " could not be opened!" << endl;
+  }
+
+  unsigned long long offset = 0;
+  char term[300];
+  uint termId = 0;
+  uint listLen = 0;
+  uint listLenInBytes = 0;
+  uint tmp1 = 0;
+  uint tmp2 = 0;
+  uint tmp3 = 0;
+  uint tmp4 = 0;
+  uint tmp5 = 0;
+
+  //term termID listLength totalOccurrences offset listLenBytes posOffset posListLen contOffset contListLen 
+  while(fscanf(lexFile, "%s %u %u %u %llu %u %u %u %u %u\n", term, &termId, &listLen, &tmp1, &offset, &listLenInBytes, &tmp2, &tmp3, &tmp4, &tmp5)!=EOF){
+    string termName(term);
+    // cout << termName <<" "<< termId << " " << listLen << " " << listLenInBytes << " " << offset << endl;
+    LexInfo l(termId, listLen, listLenInBytes, offset);
+    this->lexMap.insert(pair<string, LexInfo>(termName, l));
+  }
+
+  fclose(lexFile);
+}
+
+void LMMaker::LoadSmallLex(string input_lex){
+  FILE* lexFile;
+  lexFile = fopen(input_lex.c_str(), "r");
+  if(lexFile == NULL){
+    cout << "Problem! The file: " << input_lex << " could not be opened!" << endl;
+  }
+  char term[1001];
+  uint termID;
+  uint listLen;
+  uint listLenInBytes;
+  unsigned long long offset = 0;
+  while(fscanf(lexFile, "%s %u %u %llu %u\n", term, &termID, &listLen, &offset, &listLenInBytes)!=EOF) {
+    string termName(term);
+    LexInfo l(termID, listLen, listLenInBytes, offset);
+    this->lexMap.insert(pair<string, LexInfo>(termName, l));
+  }
+}
+
+bool SortBySecond(const pair<string, int> p1, const pair<string, int>p2){
+  return (p1.second < p2.second);
+}
+
+void LMMaker::GetTwoTermQueries(string output_query){
+  this->LoadSmallLex(kSmallLex);
+
+  ifstream lexFile(kQueryPool);
+  ofstream queryFile(output_query);
+
+  if(lexFile){
+    char query[1001];
+    // string query;
+    while(lexFile.getline(query, 1001)){
+      char* terms;
+      terms = strtok(query, " ");
+      vector<pair<string, uint>> vec;
+      while(terms){
+        // cout << terms << " ";
+        string termName(terms);
+        auto it = this->lexMap.find(termName);
+        if(it != this->lexMap.end()) {
+          // cout << it->second.listLen << " ";
+          vec.push_back(pair<string, uint>(termName, it->second.listLen));
+        }
+        terms = strtok(NULL, " ");
+      }
+      // cout << endl;
+      sort(vec.begin(), vec.end(), SortBySecond);
+      if(vec.size() > 2){
+        vec.resize(2);
+      }
+      for(int i = 0; i < vec.size(); i++){
+        queryFile << vec[i].first << " ";
+      }
+      queryFile << "\n";
+    }
+  } 
+  lexFile.close();
+  queryFile.close();
 }

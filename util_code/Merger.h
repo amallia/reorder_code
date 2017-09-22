@@ -102,17 +102,6 @@ private:
   	map<unsigned int, unsigned int> randomOrderMap;
   	map<unsigned int, unsigned int> originalOrderMap;
 
-  	//query generation
-  	// const string rawQuery = "/home/qw376/SIGIR2017/testQueries/1kRawQueries";
-  	const string rawQuery = "/home/qw376/SIGIR2017/testQueries/toyQueries408";
-  	const string numQuery = "/home/qw376/SIGIR2017/testQueries/numQuery";
-  	const string queryLex = "/home/qw376/SIGIR2017/testQueries/queryLex";
-  	const string wholeLex = "/home/qw376/Info_Clueweb/lexikon.txt";
-  	unordered_map<string, LexInfo> lexMap;
-
-  	//query selection
-  	const string queryPool = "/home/qw376/SIGIR2017/testQueries/queryPool";
-
   	//doc length
 	const int MAXD = 50219612;
   	unsigned int* doclen;
@@ -139,16 +128,6 @@ public:
 	void loadOriginalOrder();
 	void getNewOrder();
 
-	//query
-	void queryGenerator();
-	void buildSmallLex();
-	void loadLex();
-	void buildTermIDQueryLog();
-
-	//1k query selection
-	void queryTermIDSelector();
-	void rawQuerySelector();
-
 	//docLength remap
 	void loadDocLength();
 	void loadNewOrdering();
@@ -163,4 +142,41 @@ public:
 	//for verification
 	void verifyGraph(string lex_path, string index_path);
 	void verifyDeltaGraph(string lex_path, string index_path);
+};
+
+/***************************************************************************
+language model and query related stuff
+***************************************************************************/
+
+const string kFullQueryPath = "";
+
+const string kWholeLex = "/home/qw376/Info_Clueweb/lexikon.txt";
+// const string rawQuery = "/home/qw376/SIGIR2017/testQueries/1kRawQueries";
+const string kRawQuery = "/home/qw376/SIGIR2017/testQueries/toyQueries408";
+const string kNumQuery = "/home/qw376/SIGIR2017/testQueries/numQuery";
+const string kQueryLex = "/home/qw376/SIGIR2017/testQueries/queryLex";
+//query selection
+const string kQueryPool = "/home/qw376/reorder_data/query/3kQueries";
+const string kTwoTermsQuery = "/home/qw376/reorder_data/query/2terms3kQueries";
+const string kSmallLex = "/home/qw376/reorder_data/lexicon/3kQueryLexicon";
+
+class LMMaker{ 
+	private:
+		unordered_map<string, LexInfo> lexMap;
+	public:
+		//query
+		void queryGenerator();
+		void LoadLex();
+		void buildTermIDQueryLog();
+
+		//1k query selection
+		void queryTermIDSelector();
+		void rawQuerySelector();
+
+		//two terms query generation
+		void LoadSmallLex(const string input_lex);
+		void GetTwoTermQueries(const string output_query);
+
+		//build small lex
+		void buildSmallLex(const string input_query, const string output_lex);
 };

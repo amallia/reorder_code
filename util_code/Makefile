@@ -9,13 +9,13 @@ CXXFLAGS = -Wall -g -o3 -std=c++11 -lm
 # ****************************************************
 # Targets needed to bring the executable up to date
 
-GraphMerger: mergeGraph.o Merger.o
-	$(CXX) $(CXXFLAGS) -o GraphMerger mergeGraph.o Merger.o
+utils: main.o Merger.o
+	$(CXX) $(CXXFLAGS) -o utils main.o Merger.o
 
 # The main.o target can be written more simply
 
-mergeGraph.o: Merger.h
+main.o: Merger.h
 Merger.o: Merger.h
 
 clean:
-	rm -rf *o GraphMerger
+	rm -rf *o utils
