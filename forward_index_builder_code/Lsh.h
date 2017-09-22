@@ -78,6 +78,8 @@ struct docLexTSP {
 
 const uint kNumberOfDocs = 50219612;
 const unsigned int kIntSize = 4;
+const string kCompressedDocLex = "/home/qw376/reorder_data/compressed_doc_index/doc_lex";
+const string kCompressedDocIndex = "/home/qw376/reorder_data/compressed_doc_index/doc_index";
 
 class docGenerator{
 public:
@@ -88,11 +90,10 @@ public:
     const string uniqueDocIndex = "/home/qw376/SIGIR2017/docIndex/index16";
 
     unsigned long offset;
-    vector<unsigned int> didsGraph;
-    vector<unsigned int> compressedSizesGraph;
-    vector<unsigned int> lengthsGraph;
-    vector<unsigned long> offsetsGraph;
-    vector<unsigned int> impactGraph;
+    vector<unsigned int> dids;
+    vector<unsigned int> compressedSizes;
+    vector<unsigned int> lengths;
+    vector<unsigned long> offsets;
     vector<unsigned char> compressedList;
 
     docGenerator(){
@@ -104,6 +105,7 @@ public:
     Document getNextDocument(struct docLexTSP dlexEntry);
     Document getNextDocumentSeq(struct docLexTSP dlexEntry);
     int compressionVbytes(vector<uint> input);
+    void WriteIndex(string lex_path, string index_path);
 };
 
 int decompressionVbytesInt(unsigned char* input, unsigned * output, int size);

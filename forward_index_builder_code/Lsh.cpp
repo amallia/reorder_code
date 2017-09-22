@@ -187,8 +187,9 @@ void docGenerator::generateDocIndex(){
     exit(0);
   }
   Document currentDoc;
-  // for (uint i = 0; i < kNumberOfDocs; i++) {
-  for (uint i = 0; i < 10; i++) {
+  unsigned long newOffset = 0;
+  for (uint i = 0; i < kNumberOfDocs; i++) {
+  // for (uint i = 0; i < 10; i++) {
     currentDoc = getNextDocument( this->dLex[i] );
     // currentDoc = getNextDocumentSeq( this->dLex[i] );
     const vector<Term> & terms = currentDoc.getTerms(); 
@@ -198,17 +199,40 @@ void docGenerator::generateDocIndex(){
     }
     sort(tids.begin(), tids.end());
 
-    for(uint n = 0; n < tids.size(); n++){
-      cout << tids[n] << " ";
-    }
-    cout << endl;
+    // for(uint n = 0; n < tids.size(); n++){
+    //   cout << tids[n] << " ";
+    // }
+    // cout << endl;
 
     for(uint n = tids.size() - 1; n >=1; n--){
       tids[n] = tids[n] - tids[n-1];
     }
-
     uint compressedSizeDelta = compressionVbytes(tids);
+    cout << i << " " << tids.size() << " " << compressedSizeDelta << " " << newOffset << endl;
+    dids.push_back(i);
+    lengths.push_back(tids.size());
+    compressedSizes.push_back(compressedSizeDelta);
+    offsets.push_back(newOffset);
+    newOffset += compressedSizeDelta;
   }
+  this->WriteIndex(kCompressedDocLex, kCompressedDocIndex);
   //close index file
   this->docIndexFP->close();
+}
+
+
+void docGenerator::WriteIndex(string lex_path, string index_path){
+  /*dump buffer to file*/
+  dumpToFile(index_path, this->compressedList.begin(), this->compressedList.end());
+  /*dump lexicon to file*/
+  FILE * lexDir = fopen(lex_path.c_str(), "w");
+  if( lexDir == NULL){
+     cout << "Problem! The file: " << lex_path << " could not be opened!" << endl;
+     exit(0);
+  }
+  for(int i = 0; i < dids.size(); ++i){
+     fprintf(lexDir, "%u %u %u %lu\n", dids[i], lengths[i], compressedSizes[i], offsets[i]);
+  }
+  fclose(lexDir);
+    cout << "compressed doc index generated" << endl;
 }
