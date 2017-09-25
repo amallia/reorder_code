@@ -200,8 +200,6 @@ public:
   void updateTermLists(uint newDid, uint did);
   bool getNextCandidate(uint newDid, uint did);
   // void updateEdgeWeightShuai(uint newDid, uint did);
-  void loadSortedPairs();
-  void loadProbMass();
   
   //lexicon and buffer for the unique docs
   const string uniqueDocLex = "/home/qw376/SIGIR2017/docIndex/lex16";
@@ -231,8 +229,8 @@ public:
   vector<uint> endDidVector;
   vector<bool> visited;
   uint candidate;
-  void loadSortedPairsDA();
-  void loadProbMassDA();
+  void loadSortedPairs();
+  void loadProbMass();
 
   /*output did assignment*/
   const string didMapping = "/home/qw376/SIGIR2017/didReassignment/tspOrder318";

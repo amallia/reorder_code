@@ -19,35 +19,6 @@
 
 using namespace std;
 
-typedef unsigned int uint;
-
-int decompressionVbytes(unsigned char* input, unsigned short* output, int size){
-    unsigned char* curr_byte = input;
-    unsigned short n;
-    for (int i = 0; i < size; ++i) {
-      unsigned char b = *curr_byte;
-      n = b & 0x7F;
-//        cout<<"The first byte: "<<n<<endl;
-//        print_binary(n);
-//        cout<<endl;
-
-      while((b & 0x80) !=0){
-        n = n << 7;
-        ++curr_byte;
-          b = *curr_byte;
-          n |= (b & 0x7F);
-//          cout<<"The following byte: "<<n<<endl;
-//          print_binary(n);
-//          cout<<endl;
-      }
-    ++curr_byte;
-    output[i] = n;
-  }
-
-  int num_bytes_consumed = (curr_byte - input);
-  return (num_bytes_consumed >> 2) + ((num_bytes_consumed & 3) != 0 ? 1 : 0);
-}
-
 int decompressionVbytesInt(unsigned char* input, unsigned * output, int size){
     unsigned char* curr_byte = input;
     unsigned n;
@@ -76,8 +47,7 @@ int decompressionVbytesInt(unsigned char* input, unsigned * output, int size){
 }
 
 void tspRunner::run(){
-  this->loadSortedPairsDA();
-  this->loadProbMassDA();
+  this->loadSortedPairs();
   this->loadCompressedGraph();
   this->loadCompressedDocs();
   this->tsp();
@@ -375,7 +345,7 @@ void tspRunner::tsp(){
 }
 
 
-void tspRunner::loadSortedPairsDA(){
+void tspRunner::loadSortedPairs(){
   this->proVector.resize(this->numOfTerms+1);
   for(uint i = 0; i <= this->numOfTerms; i++){//termId start from 1, so use <=
     vector<probPair> t;
@@ -397,60 +367,17 @@ void tspRunner::loadSortedPairsDA(){
   fclose(fH);
 }
 
-void tspRunner::loadProbMassDA(){
-  this->probMassVector.resize(this->numOfTerms+1, 0.0f);// initailize the vector
-  FILE* fH = fopen(this->probMass.c_str(), "r");
-  if ( fH == NULL ) cout << this->probMass << " file could not be opened" << endl;
-  else cout << "Loading remaining probabilities mass larger than 200 from file " << this->probMass << endl;
+// void tspRunner::loadProbMass(){
+//   this->probMassVector.resize(this->numOfTerms+1, 0.0f);// initailize the vector
+//   FILE* fH = fopen(this->probMass.c_str(), "r");
+//   if ( fH == NULL ) cout << this->probMass << " file could not be opened" << endl;
+//   else cout << "Loading remaining probabilities mass larger than 200 from file " << this->probMass << endl;
 
-  uint tid;
-  float mass;
+//   uint tid;
+//   float mass;
 
-  while( fscanf( fH, "%u %f\n", &tid, &mass) != EOF){
-    this->probMassVector[tid] = mass;
-  }
-  fclose(fH);
-}
-
-void tspRunner::loadSortedPairs(){
-
-  FILE* fH = fopen(this->sortedPairs.c_str(), "r");
-    if ( fH == NULL ) cout << this->sortedPairs << " file could not be opened" << endl;
-    else cout << "Loading sorted pair probabilities from file " << this->sortedPairs << endl;
-
-    uint tid1;
-    uint tid2;
-    double exponent = 0.0f;
-
-    while( fscanf( fH,"%u%u%lf\n", &tid1, &tid2, &exponent) != EOF ) {
-      probPair p(tid2, exponent);
-
-      this->it = this->probMap.find(tid1);
-      if (this->it != this->probMap.end()) {
-        this->it->second.push_back(p);
-      }else{
-        vector<probPair> v;
-        v.push_back(p);
-        this->probMap[tid1] = v;
-      }
-    }
-
-    fclose(fH);
-    cout << this->probMap.size() << endl;
-}
-
-void tspRunner::loadProbMass(){
-
-  FILE* fH = fopen(this->probMass.c_str(), "r");
-  if ( fH == NULL ) cout << this->probMass << " file could not be opened" << endl;
-  else cout << "Loading remaining probabilities mass larger than 200 from file " << this->probMass << endl;
-
-  uint tid;
-  double mass;
-
-  while( fscanf( fH, "%u%lf\n", &tid, &mass) != EOF){
-    this->probMassMap[tid] = mass;
-  }
-  fclose(fH);
-  cout << this->probMassMap.size() << endl;
-}
+//   while( fscanf( fH, "%u %f\n", &tid, &mass) != EOF){
+//     this->probMassVector[tid] = mass;
+//   }
+//   fclose(fH);
+// }
