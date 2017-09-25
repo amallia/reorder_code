@@ -8,7 +8,7 @@ int main(int argc, const char* argv[]){
 		std::cout << "generating postings\n";
 		Builder builder(kIndexPath, kLexPath, kDocLengths, kDocNum);
 		std::vector<Posting> postings;
-		builder.GetPostings(1, postings);
+		builder.GeneratePostings(1, 10000);
 	}
 
 	/*merge tuples*/

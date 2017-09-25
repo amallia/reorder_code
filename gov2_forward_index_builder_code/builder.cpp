@@ -1,4 +1,36 @@
 #include "builder.h"
+#include <sstream>
+#include <algorithm>
+
+template <typename Iterator>
+void dumpToFile(const std::string& path, Iterator start, Iterator end) {
+	FILE *fdo = fopen(path.c_str(),"w");
+	// FILE *fdo = fopen(path.c_str(),"a+");
+	if(! fdo) {
+		std::cout << "Failed writing to " << path << " (Hint: create folder for path?)" << std::endl;
+		return;
+	}
+	assert(fdo);
+	for (; start !=end; ++start)
+		if (fwrite(&(*start), sizeof(typename Iterator::value_type), 1, fdo) != 1)
+			std::cout << "Failed writing to " << path << " (Hint: create folder for path?)" << std::endl;
+	fclose(fdo);
+}
+
+/*sort the buffer vector by did then tid*/
+bool SortByDidThenTid(const Posting p1, const Posting p2){
+	if(p1.did < p2.did) {
+		return true;
+	}else if(p1.did > p2.did) {
+		return false;
+	}else{
+		if(p1.tid < p2.tid) {
+			return true;
+		}else{
+			return false;
+		}
+	}
+}
 
 /*constructor*/
 Builder::Builder(const std::string index, const std::string lex, 
@@ -31,6 +63,9 @@ Builder::Builder(const std::string index, const std::string lex,
 
 	/*store lists*/
 	tmpBuffer = new uint[doc_num * 2];
+
+	/*keep track of the file*/
+	file_counter = 0;
 }
 
 /*deconstructor*/
@@ -45,18 +80,54 @@ Builder::~Builder(){
 	delete[] tmpBuffer;
 }
 
-/*get the (did, tid, freq) tuples*/
-void Builder::GetPostings(const uint term_id, std::vector<Posting>& output){
+/*get the (did, tid, freq) postings*/
+void Builder::GetPostings(const uint term_id){
 	assert(term_id == listLengths[4*(term_id-1)]);
 	uint list_len = listLengths[4*(term_id-1) + 1];
-	std::cout << offsets[term_id-1] << std::endl;
-	fseek(fIndex,offsets[term_id-1],SEEK_SET); //jump to the right position
+	/*access the index sequentially, not jumping*/
+	// std::cout << offsets[term_id-1] << std::endl;
+	// fseek(fIndex,offsets[term_id-1],SEEK_SET); //jump to the right position
 	if( (list_len*2)!= fread( tmpBuffer, sizeof(int), list_len*2, fIndex ))
 				std::cout << "can not read index\n"; //<<listsize*2
-	std::vector<uint> dids;
-	std::vector<uint> freqs;
 	for(int i = 0; i < (int)list_len; i++){
-		dids.push_back(tmpBuffer[2*i] - 1);
-		freqs.push_back(tmpBuffer[2*i + 1]);
+		Posting p(tmpBuffer[2*i] - 1, term_id, tmpBuffer[2*i + 1]);
+		this->global_buffer.push_back(p);
 	}
+}
+
+/*generate postings from term_id a to term_id b*/
+void Builder::GeneratePostings(const uint start, const uint end){
+	/*jump to the right position once*/
+	// std::cout << offsets[start-1] << std::endl;
+	fseek(fIndex,offsets[start-1],SEEK_SET); 
+	for(uint tid = start; tid < end; tid++) {
+		GetPostings(tid);
+		/*when the global buffer hit the threshold, write out*/
+		if(this->global_buffer.size() >= kBufferSize) {
+			sort(this->global_buffer.begin(), this->global_buffer.end(), SortByDidThenTid);
+			WriteToDisk();
+			this->global_buffer.clear();
+		}
+	}
+	/*flush the buffer*/
+	if(this->global_buffer.size() > 0){
+		sort(this->global_buffer.begin(), this->global_buffer.end(), SortByDidThenTid);
+		WriteToDisk();
+	}
+}
+
+/*write buffer to disk*/
+void Builder::WriteToDisk(){
+	std::vector<uint> tmp;
+	for(uint i=0; i<this->global_buffer.size(); i++){
+		tmp.push_back(global_buffer[i].did);
+		tmp.push_back(global_buffer[i].tid);
+		tmp.push_back(global_buffer[i].freq);
+	}
+
+	std::stringstream ss;
+	ss << kBufferDir << this->file_counter;
+	std::string filename = ss.str();
+	dumpToFile(filename.c_str(), tmp.begin(), tmp.end());
+	this->file_counter++;
 }
