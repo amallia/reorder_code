@@ -90,7 +90,8 @@ void Builder::GetPostings(const uint term_id){
 	if( (list_len*2)!= fread( tmpBuffer, sizeof(int), list_len*2, fIndex ))
 				std::cout << "can not read index\n"; //<<listsize*2
 	for(int i = 0; i < (int)list_len; i++){
-		Posting p(tmpBuffer[2*i] - 1, term_id, tmpBuffer[2*i + 1]);
+		// Posting p(tmpBuffer[2*i] - 1, term_id, tmpBuffer[2*i + 1]);
+		Posting p(tmpBuffer[2*i] - 1, term_id);
 		this->global_buffer.push_back(p);
 	}
 }
@@ -100,7 +101,8 @@ void Builder::GeneratePostings(const uint start, const uint end){
 	/*jump to the right position once*/
 	// std::cout << offsets[start-1] << std::endl;
 	fseek(fIndex,offsets[start-1],SEEK_SET); 
-	for(uint tid = start; tid < end; tid++) {
+	for(uint tid = start; tid <= end; tid++) {
+		std::cout << tid << std::endl;
 		GetPostings(tid);
 		/*when the global buffer hit the threshold, write out*/
 		if(this->global_buffer.size() >= kBufferSize) {
@@ -122,7 +124,7 @@ void Builder::WriteToDisk(){
 	for(uint i=0; i<this->global_buffer.size(); i++){
 		tmp.push_back(global_buffer[i].did);
 		tmp.push_back(global_buffer[i].tid);
-		tmp.push_back(global_buffer[i].freq);
+		// tmp.push_back(global_buffer[i].freq);
 	}
 
 	std::stringstream ss;

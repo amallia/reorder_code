@@ -10,15 +10,18 @@ const std::string kIndexPath = "/home/constantinos/Datasets/GOV2/Sorted/8_1.dat_
 const std::string kLexPath = "/home/constantinos/Datasets/GOV2/8_1.inf";
 const std::string kDocLengths = "/home/constantinos/Datasets/GOV2/Sorted/doclen_file_sorted";
 const std::string kBufferDir = "/home/qw376/reorder_data/tmp_buffer_data_gov2/b";
-const int kDocNum = 25205179;
-const int kBufferSize = 1024*1024; //the actual file size will be *12
+const int kBufferSize = 1024*1024*2000; //the actual file size will be *8, 16G
+const int kDocNum = 25205179; //max number of documents
+const int kTermNum = 32818983; //max number of terms
 
 class Posting{
 public:	
 	int did;
 	int tid;
-	int freq;
-	Posting(int d, int t, int f): did(d), tid(t), freq(f){
+	// int freq;
+	// Posting(int d, int t, int f): did(d), tid(t), freq(f){
+	// }
+	Posting(int d, int t): did(d), tid(t){
 	}
 };
 
