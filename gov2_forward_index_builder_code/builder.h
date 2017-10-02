@@ -1,18 +1,20 @@
-#ifndef gov2_builder
-#define gov2_builder
+#ifndef GOV2_BUILDER
+#define GOV2_BUILDER
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <assert.h>
 
-const std::string kIndexPath = "/home/constantinos/Datasets/GOV2/Sorted/8_1.dat_sorted";
-const std::string kLexPath = "/home/constantinos/Datasets/GOV2/8_1.inf";
-const std::string kDocLengths = "/home/constantinos/Datasets/GOV2/Sorted/doclen_file_sorted";
-const std::string kBufferDir = "/home/qw376/reorder_data/tmp_buffer_data_gov2/b";
-const int kBufferSize = 1024*1024*2000; //the actual file size will be *8, 16G
-const int kDocNum = 25205179; //max number of documents
-const int kTermNum = 32818983; //max number of terms
+namespace BuilderData{
+	const std::string kIndexPath = "/home/constantinos/Datasets/GOV2/Sorted/8_1.dat_sorted";
+	const std::string kLexPath = "/home/constantinos/Datasets/GOV2/8_1.inf";
+	const std::string kDocLengths = "/home/constantinos/Datasets/GOV2/Sorted/doclen_file_sorted";
+	const std::string kBufferDir = "/home/qw376/reorder_data/tmp_buffer_data_gov2/b";
+	const int kBufferSize = 1024*1024*2000; //the actual file size will be *8, 16G
+	const int kDocNum = 25205179; //max number of documents
+	const int kTermNum = 32818983; //max number of terms
+}
 
 class Posting{
 public:	

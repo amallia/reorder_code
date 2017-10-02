@@ -1,4 +1,5 @@
 #include "builder.h"
+#include "merger.h"
 #include <iostream>
 
 int main(int argc, const char* argv[]){
@@ -6,14 +7,16 @@ int main(int argc, const char* argv[]){
 	/*get tuples*/
 	if(option == "-gp") {
 		std::cout << "generating postings\n";
-		Builder builder(kIndexPath, kLexPath, kDocLengths, kDocNum);
+		Builder builder(BuilderData::kIndexPath, BuilderData::kLexPath, BuilderData::kDocLengths, BuilderData::kDocNum);
 		std::vector<Posting> postings;
-		builder.GeneratePostings(1, kTermNum);
+		builder.GeneratePostings(1, BuilderData::kTermNum);
 	}
 
 	/*merge tuples*/
 	if(option == "-mp") {
 		std::cout << "merge postings\n";
+		Merger merger(MergerData::kInputList);
+		merger.merge();
 	}
 
 	return 0;

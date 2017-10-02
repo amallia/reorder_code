@@ -105,7 +105,7 @@ void Builder::GeneratePostings(const uint start, const uint end){
 		std::cout << tid << std::endl;
 		GetPostings(tid);
 		/*when the global buffer hit the threshold, write out*/
-		if(this->global_buffer.size() >= kBufferSize) {
+		if(this->global_buffer.size() >= BuilderData::kBufferSize) {
 			sort(this->global_buffer.begin(), this->global_buffer.end(), SortByDidThenTid);
 			WriteToDisk();
 			this->global_buffer.clear();
@@ -128,7 +128,7 @@ void Builder::WriteToDisk(){
 	}
 
 	std::stringstream ss;
-	ss << kBufferDir << this->file_counter;
+	ss << BuilderData::kBufferDir << this->file_counter;
 	std::string filename = ss.str();
 	dumpToFile(filename.c_str(), tmp.begin(), tmp.end());
 	this->file_counter++;
