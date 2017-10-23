@@ -5,7 +5,23 @@
 #include <unordered_map>
 #include <sstream>
 #include <map>
+#include  <random>
+#include  <iterator>
 using namespace std;
+
+template<typename Iter, typename RandomGenerator>
+Iter select_randomly(Iter start, Iter end, RandomGenerator& g) {
+    std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
+    std::advance(start, dis(g));
+    return start;
+}
+
+template<typename Iter>
+Iter select_randomly(Iter start, Iter end) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    return select_randomly(start, end, gen);
+}
 
 template <typename Iterator>
 void dumpToFile(const std::string& path, Iterator start, Iterator end) { ///home/qw376/SIGIR2017/data
@@ -72,7 +88,7 @@ private:
 	// const string deltaGraphLexOld = "/home/qw376/SIGIR2017/graphIndex/deltaGraphLex87";  
 	const string deltaGraphIndexOld = "/home/qw376/SIGIR2017/graphIndex/graphTest312";
 	const string deltaGraphLexOld = "/home/qw376/SIGIR2017/graphIndex/graphLexTest312"; 
-	const unsigned int intSize = 4;
+	const int intSize = 4;
 
 	//lexicon and buffer for the graph
 	unsigned long offset;
@@ -158,7 +174,13 @@ const string kQueryLex = "/home/qw376/SIGIR2017/testQueries/queryLex";
 //query selection
 const string kQueryPool = "/home/qw376/reorder_data/query/3kQueries";
 const string kTwoTermsQuery = "/home/qw376/reorder_data/query/2terms3kQueries";
+const string kRandomQuery = "/home/qw376/reorder_data/query/1kRandomQuery";
 const string kSmallLex = "/home/qw376/reorder_data/lexicon/3kQueryLexicon";
+const string kCommonTermFile = "/home/qw376/reorder_data/query/common_terms";
+//LM
+const string kIdealLMPath = "/home/qw376/reorder_data/LM/ideal_lm";
+const string kLMWithTermID = "/home/qw376/reorder_data/LM/ideal_lm_termIDs";
+const string kTermTable = "/home/constantinos/Datasets/GOV2/word_file";
 
 class LMMaker{ 
 	private:
@@ -170,13 +192,21 @@ class LMMaker{
 		void buildTermIDQueryLog();
 
 		//1k query selection
-		void queryTermIDSelector();
-		void rawQuerySelector();
+		// void queryTermIDSelector();
+		// void rawQuerySelector();
+		void RandomGetOneKQuery(const std::string input_query,
+ 		const std::string output_query);
 
 		//two terms query generation
 		void LoadSmallLex(const string input_lex);
-		void GetTwoTermQueries(const string output_query);
+		void GetTwoTermQueries(const std::string lex_file, const std::string input_query,
+  		const std::string common_term_file, const std::string output_query);
 
 		//build small lex
 		void buildSmallLex(const string input_query, const string output_lex);
+
+		//build ideal lm
+		void GenerateIdealLM(const string query_trace, const string lm_path);
+		void TransformLM(const string lex_path,
+			const string lm_path, const string lm_path_termID);
 };

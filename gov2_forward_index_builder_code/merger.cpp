@@ -1,5 +1,4 @@
 #include "merger.h"
-#include <iostream>
 #include <cstring>
 
 Merger::Merger(const std::string input_file_list){

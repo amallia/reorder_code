@@ -3,6 +3,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cstring>
+#include <set>
 using namespace std;
 
 int decompressionVbytesInt(unsigned char* input, unsigned * output, int size){
@@ -34,7 +35,7 @@ int decompressionVbytesInt(unsigned char* input, unsigned * output, int size){
 
 int Merger::compressionVbytes(vector<uint> input){
    int compressedSize = 0;
-   for (int i = 0; i < input.size(); ++i){
+   for (uint i = 0; i < input.size(); ++i){
           unsigned char byteArr[this->intSize];
           bool started = false;
           int x = 0;
@@ -139,7 +140,6 @@ void Merger::verifyGraph(string lex_path, string index_path){
   unsigned compressedSize;
   unsigned impact;
   unsigned long offset;
-  unsigned long newOffset = 0;
   int breaker = 0;
 
   FILE * lexFile;
@@ -242,7 +242,7 @@ void Merger::verifyDeltaGraph (string lex_path, string index_path) {
     }
     // cout << endl;
     // cout << dids.size() << endl;
-    for(int i = 0; i < dids.size(); i++){
+    for(uint i = 0; i < dids.size(); i++){
       cout << dids[i] << " ";
     }
     cout << endl;
@@ -268,7 +268,7 @@ void Merger::writeDeltaIndex(){
      cout << "Problem! The file: " << this->deltaGraphLex << " could not be opened!" << endl;
      exit(0);
   }
-  for(int i = 0; i < didsGraph.size(); ++i){
+  for(uint i = 0; i < didsGraph.size(); ++i){
      fprintf(lexDir, "%u %u %u %lu\n", didsGraph[i], lengthsGraph[i], compressedSizesGraph[i], offsetsGraph[i]);
   }
   fclose(lexDir);
@@ -284,7 +284,7 @@ void Merger::writeMergedIndex(){
 	   cout << "Problem! The file: " << this->mergedGraphLex << " could not be opened!" << endl;
 	   exit(0);
 	}
-	for(int i = 0; i < didsGraph.size(); ++i){
+	for(uint i = 0; i < didsGraph.size(); ++i){
 	   fprintf(lexDir, "%u %u %u %lu\n", didsGraph[i], lengthsGraph[i], compressedSizesGraph[i], offsetsGraph[i]);
 	}
 	fclose(lexDir);
@@ -447,7 +447,7 @@ void Merger::WriteIndex(string lex_path, string index_path){
      cout << "Problem! The file: " << lex_path << " could not be opened!" << endl;
      exit(0);
   }
-  for(int i = 0; i < didsGraph.size(); ++i){
+  for(uint i = 0; i < didsGraph.size(); ++i){
      fprintf(lexDir, "%u %u %u %lu\n", didsGraph[i], lengthsGraph[i], compressedSizesGraph[i], offsetsGraph[i]);
   }
   fclose(lexDir);
@@ -456,7 +456,7 @@ void Merger::WriteIndex(string lex_path, string index_path){
 
 void Merger::CompressUrlGraph(){
   unsigned long newOffset = 0;
-  for(int i = 1; i <= this->numDocs; i++){
+  for(uint i = 1; i <= this->numDocs; i++){
   // for(int i = 1; i <= 10; i++){
     vector<uint> dids;
     dids = this->urlNeighborArray[i];
@@ -492,13 +492,13 @@ void Merger::mergeNeighbors(){
   // for(int i = 1; i <= this->numDocs; i++){
     for(int i = 1; i <= 10; i++){
     vector<uint> dids;
-    int j = 0;
+    uint j = 0;
     for(j = 0; j < this->lshNeighborArray[i].size(); j++){
       dids.push_back(this->lshNeighborArray[i][j]);
     }
 
     if( j < 100 ){
-      for(int k = 0; k < this->urlNeighborArray[i].size(); k++){
+      for(uint k = 0; k < this->urlNeighborArray[i].size(); k++){
         dids.push_back(this->urlNeighborArray[i][k]);
         //todo reach 100 break
         if(j + k >= 99){
@@ -715,67 +715,67 @@ void LMMaker::buildTermIDQueryLog(){ //the cout directly generate the output
   fclose(lexFile);
 }
 
-void LMMaker::queryTermIDSelector(){ //use the cout as output
-  this->LoadLex();
-  FILE * lexFile;
-  lexFile = fopen(kQueryPool.c_str(), "r");
-  if(lexFile == NULL){
-    cout << "Problem! The file: " << kQueryPool << " could not be opened!" << endl; 
-  }
-  uint k = 0;
-  char terms[ 1024 ];
-  while(fgets(terms, sizeof terms, lexFile)!= NULL){
-    if(k%3 == 0){
-      string tmp(terms);
-      // printf("%s\n", term);
-      // cout << tmp;
-      stringstream ss(tmp);
-      string buf;
-      vector<string> termIds;
-      while (ss >> buf){
-          termIds.push_back(buf);
-      }
-      for(uint i = 0; i < termIds.size(); i++){
-        unordered_map<string, LexInfo>::iterator it;
-        it = this->lexMap.find(termIds[i]);
-        if(it!=this->lexMap.end()){
-          cout << it->second.termId << " ";
-        }
-      }
-      cout << endl;
-    }
-    // if(k == 2999){
-    if(k == 29){
-      break;
-    }
-    k++;
-  }
-  fclose(lexFile);
-}
+// void LMMaker::queryTermIDSelector(){ //use the cout as output
+//   this->LoadLex();
+//   FILE * lexFile;
+//   lexFile = fopen(kQueryPool.c_str(), "r");
+//   if(lexFile == NULL){
+//     cout << "Problem! The file: " << kQueryPool << " could not be opened!" << endl; 
+//   }
+//   uint k = 0;
+//   char terms[ 1024 ];
+//   while(fgets(terms, sizeof terms, lexFile)!= NULL){
+//     if(k%3 == 0){
+//       string tmp(terms);
+//       // printf("%s\n", term);
+//       // cout << tmp;
+//       stringstream ss(tmp);
+//       string buf;
+//       vector<string> termIds;
+//       while (ss >> buf){
+//           termIds.push_back(buf);
+//       }
+//       for(uint i = 0; i < termIds.size(); i++){
+//         unordered_map<string, LexInfo>::iterator it;
+//         it = this->lexMap.find(termIds[i]);
+//         if(it!=this->lexMap.end()){
+//           cout << it->second.termId << " ";
+//         }
+//       }
+//       cout << endl;
+//     }
+//     // if(k == 2999){
+//     if(k == 29){
+//       break;
+//     }
+//     k++;
+//   }
+//   fclose(lexFile);
+// }
 
-void LMMaker::rawQuerySelector(){ //use the cout as output
-  FILE * lexFile;
-  lexFile = fopen(kQueryPool.c_str(), "r");
-  if(lexFile == NULL){
-    cout << "Problem! The file: " << kQueryPool << " could not be opened!" << endl; 
-  }
-  uint k = 0;
-  char terms[ 1024 ];
-  // string exception = "group home in new york";
-  while(fgets(terms, sizeof terms, lexFile)!= NULL){
-    if(k%3 == 0){
-      string tmp(terms);
-      // printf("%s\n", term);
-      cout << tmp;
-    }
-    // if(k == 3000){
-    if(k == 29){
-      break;
-    }
-    k++;
-  }
-  fclose(lexFile);
-}
+// void LMMaker::rawQuerySelector(){ //use the cout as output
+//   FILE * lexFile;
+//   lexFile = fopen(kQueryPool.c_str(), "r");
+//   if(lexFile == NULL){
+//     cout << "Problem! The file: " << kQueryPool << " could not be opened!" << endl; 
+//   }
+//   uint k = 0;
+//   char terms[ 1024 ];
+//   // string exception = "group home in new york";
+//   while(fgets(terms, sizeof terms, lexFile)!= NULL){
+//     if(k%3 == 0){
+//       string tmp(terms);
+//       // printf("%s\n", term);
+//       cout << tmp;
+//     }
+//     // if(k == 3000){
+//     if(k == 29){
+//       break;
+//     }
+//     k++;
+//   }
+//   fclose(lexFile);
+// }
 
 void LMMaker::buildSmallLex(const string input_query, const string output_lex){//the cout directly generate the output
   this->LoadLex();
@@ -859,40 +859,181 @@ bool SortBySecond(const pair<string, int> p1, const pair<string, int>p2){
   return (p1.second < p2.second);
 }
 
-void LMMaker::GetTwoTermQueries(string output_query){
-  this->LoadSmallLex(kSmallLex);
+void LMMaker::GetTwoTermQueries(const std::string lex_file, const std::string input_query,
+  const std::string common_term_file, const std::string output_query){
+  LoadSmallLex(lex_file);
 
-  ifstream lexFile(kQueryPool);
+  /*undesired terms*/
+  std::set<std::string> common_terms;
+  ifstream ctFile(common_term_file);
+  if(ctFile) {
+    char term[500];
+    while(ctFile.getline(term, 500)) {
+      string t(term);
+      common_terms.insert(t);
+      std::cout << t << std::endl;
+    }
+  }
+  ctFile.close();
+  // exit(0);
+
+  ifstream inputQueryFile(input_query);
   ofstream queryFile(output_query);
 
-  if(lexFile){
+  if(inputQueryFile){
     char query[1001];
     // string query;
-    while(lexFile.getline(query, 1001)){
+    while(inputQueryFile.getline(query, 1001)){
       char* terms;
       terms = strtok(query, " ");
       vector<pair<string, uint>> vec;
       while(terms){
-        // cout << terms << " ";
         string termName(terms);
+        // std::cout << termName << std::endl;
+        auto it1 = common_terms.find(termName);
+        if (it1 != common_terms.end()) {
+          terms = strtok(NULL, " ");
+          continue;
+        }
         auto it = this->lexMap.find(termName);
         if(it != this->lexMap.end()) {
           // cout << it->second.listLen << " ";
+          /*remove undesired terms, the, and*/
           vec.push_back(pair<string, uint>(termName, it->second.listLen));
         }
         terms = strtok(NULL, " ");
       }
       // cout << endl;
       sort(vec.begin(), vec.end(), SortBySecond);
-      if(vec.size() > 2){
+      if(vec.size() > 2) {
         vec.resize(2);
       }
-      for(int i = 0; i < vec.size(); i++){
+      if(vec.size() < 2) {
+        continue;
+      }
+      if(vec[0] == vec[1]) {
+        continue;
+      }
+      for(uint i = 0; i < vec.size(); i++){
         queryFile << vec[i].first << " ";
       }
       queryFile << "\n";
     }
   } 
-  lexFile.close();
+  inputQueryFile.close();
   queryFile.close();
+}
+
+void LMMaker::RandomGetOneKQuery(const std::string input_query,
+  const std::string output_query) {
+  ifstream in_file(input_query);
+  std::vector<string> queries;
+  char query[1001];
+  if(in_file) {
+    while(in_file.getline(query, 1001)) {
+      string terms(query);
+      queries.push_back(terms);
+      // std::cout << terms << std::endl;
+    }
+  }
+  in_file.close();
+  // std::cout << queries.size() << std::endl;
+
+  ofstream out_file(output_query);
+  std::set<string> random_quries; 
+  while(random_quries.size() < 1000) {
+    string r = *select_randomly(queries.begin(), queries.end());
+    auto it = random_quries.find(r);
+    if(it==random_quries.end()){
+      random_quries.insert(r);
+      out_file << r << std::endl;
+    }
+  }
+  std::cout << random_quries.size() << std::endl;
+}
+
+void LMMaker::GenerateIdealLM(const std::string query_trace,
+  const std::string lm_path){
+  std::cout << "making ideal lm\n";
+  //todo, for now just use the pairs, treat each of them with weight 1
+  std::map<std::string, int> lm_map;
+
+  ifstream queryFile(query_trace);
+  if(queryFile) {
+    char query[1000];
+    while(queryFile.getline(query, 1000)) {
+      vector<string> terms;
+      char* term;
+      term = strtok(query, " ");
+      while(term) {
+        // std::cout << term << std::endl;
+        terms.push_back(term);
+        term = strtok(NULL, " ");
+      }
+      // sort(terms.begin(), terms.end());
+      auto it = lm_map.find(terms[0]+ " " +terms[1]);
+      if(it == lm_map.end()) {
+        lm_map[terms[0]+ " " +terms[1]] = 1;
+      }else{
+        lm_map[terms[0]+ " " +terms[1]]++;
+      }
+      auto it1 = lm_map.find(terms[1]+ " " +terms[0]);
+      if(it1 == lm_map.end()) {
+        lm_map[terms[1]+ " " +terms[0]] = 1;
+      }else {
+        lm_map[terms[1]+ " " +terms[0]]++;
+      }
+    }
+  }
+  queryFile.close();
+
+  ofstream lmFile(lm_path);
+  for(auto it=lm_map.begin(); it!=lm_map.end(); it++) {
+    lmFile << it->first << " " << it->second << endl;
+  }
+  lmFile.close();
+}
+
+void LMMaker::TransformLM(const string lex_path,
+  const string lm_path, const string lm_path_termID){
+  std::cout << "transform lm into TermIDs\n";
+  map<string, int> term_table;
+  FILE* lexFile = fopen(kTermTable.c_str(), "r");
+  if(!lexFile) {
+    std::cout << kTermTable << " can not be opened\n";
+  }
+  char term[1000];
+  uint tid;
+  while(fscanf(lexFile, "%s %u", term, &tid)!=EOF) {
+    term_table[term] = tid;
+  }
+  fclose(lexFile);
+  cout << "term table loading done\n";
+
+  ifstream lmFile(lm_path);
+  ofstream lmTermIDFile(lm_path_termID);
+  if(lmFile && lmTermIDFile) {
+    char lm[1000];
+    while(lmFile.getline(lm, 1000)) {
+      char* term;
+      term = strtok(lm, " ");
+      int num = 0; //the third one is freq we don't map it
+      while(term) {
+        // cout << term << " ";
+        if(2 == num++) {
+          lmTermIDFile << term << endl;
+          break;
+        }else{
+          auto it = term_table.find(term);
+          if(it!=term_table.end()) {
+            // cout << it->second << " ";
+            lmTermIDFile << it->second << " ";
+          }
+          term = strtok(NULL, " ");
+        }
+      }
+    }
+  }
+  lmFile.close();
+  lmTermIDFile.close();
 }
