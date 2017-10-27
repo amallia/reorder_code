@@ -6,268 +6,126 @@
 using namespace std;
 
 bool sortPostingQP(const qpRunnerPosting& a, const qpRunnerPosting& b){
-  return (a.did < b.did);
+	return (a.did < b.did);
 }
 
-Gov2Reader::Gov2Reader(int _docn){
-
-		docn = _docn; // CONSTS::MAXD Total # of documents in collection
-		doclen = new unsigned int[docn + 256];
-		for(int i = 0; i < docn + 256; i++){
-			doclen[i] = 0;
-		}
-
-		termid_ = new unsigned int[this->numberOfTerms];
-		listLen_ = new unsigned long[this->numberOfTerms];
-		offset_ = new unsigned long[this->numberOfTerms];
-		listLenBytes_ = new unsigned long[this->numberOfTerms];
-
-		ifstream doc_lexikon_stream;
-		doc_lexikon_stream.open(this->smallLex.c_str());
-
-		string lexicon_line;
-		string term;
-		string termid_s;
-		string listLen_s;
-		string offset_s;
-		string listLenBytes_s;
-		int termid;
-		long listLen;
-		long offset;
-		long listLenBytes;
-		int linenum = 0;
-
-		while (getline(doc_lexikon_stream, lexicon_line)){
-
-//			cout<<"linenum: "<<linenum<<endl;
-//			if(linenum == 10)
-//				break;
-
-			//term, first field
-			string::iterator itr1 = lexicon_line.begin();
-			string::iterator start1 = itr1;
-			while(itr1 != lexicon_line.end() && !isspace(*itr1)){
-				++itr1;
-			}
-			term = string(start1, itr1);
-			term_.push_back(term);
-			term_map[term] = linenum;
-			this->termIDMap[linenum] = term;
-			// cout<<"term: "<<term<<" ";
-			//term
-
-			 //termID, come after the 1st space
-		  	 start1 = itr1+1;
-		  	 itr1++;
-		  	 while (!isspace(*itr1)) {
-		  	 ++itr1;
-		  	 }
-
-		  	 termid_s = string(start1,itr1);
-		  	 termid = atoi(termid_s.c_str());
-
-		  	 // cout<<"termid: "<<termid<<" ";
-		  	 termid_[linenum] = termid;
-		  	 //termID
-
-		  	 //listLen, come after the 2nd space
-		  	 start1 = itr1+1;
-		  	 itr1++;
-		  	 while (!isspace(*itr1)) {
-		  	 ++itr1;
-		  	 }
-		  	 listLen_s = string(start1, itr1);
-		  	 listLen = atol(listLen_s.c_str());
-			 // cout<<"listLen: "<<listLen<<" ";
-			 listLen_[linenum] = listLen;
-		  	 //listLen
-
-			//offset, come after the 3th space
-		  	start1 = itr1+1;
-		  	itr1++;
-		  	while (!isspace(*itr1)) {
-		  	++itr1;
-		  	}
-		  	offset_s = string(start1, itr1);
-		  	offset = atol(offset_s.c_str());
-			// cout<<"offset: "<<offset<<" ";
-			offset_[linenum] = offset;
-		  	//offset
-
-		  	//listLenBytes, come after the 4th space
-		  	start1 = itr1+1;
-		  	itr1++;
-		  	while (!isspace(*itr1)) {
-		  	   ++itr1;
-		  	}
-		  	listLenBytes_s = string(start1, itr1);
-		  	listLenBytes = atol(listLenBytes_s.c_str());
-		  	// cout<<"listLenBytes: "<<listLenBytes<<endl;
-		  	listLenBytes_[linenum] = listLenBytes;
-			//listLenBytes
-			linenum++;
-		}
-		this->numTerms = linenum;
-		cout<<"number of terms: "<< this->numTerms<<endl;
-		doc_lexikon_stream.close();
-
-//		for(int i=0; i<10; i++){
-//			cout<<term_[i]<<" ";
-//			cout<<termid_[i]<<" ";
-//			cout<<listLen_[i]<<" ";
-//			cout<<offset_[i]<<" ";
-//			cout<<listLenBytes_[i]<<endl;
-//		}
-
-//		for (map<string, int>::iterator it = term_map.begin() ; it != term_map.end(); ++it){
-//		        	cout<<it->first<<" "<<it->second<<endl;
-//		}
+Gov2Reader::~Gov2Reader(){
+	fclose(findex);
+	delete[] hold_buffer;
+	delete[] doclen;
+	delete[] lex_prefix;
+	delete[] lex_buffer;
 }
 
-void Gov2Reader::loadDocLength(){
+void Gov2Reader::LoadIndex(){
+	/*load doc length*/
+	LoadDocLength(CONSTS::MAXD);
+	hold_buffer = new uint[CONSTS::MAXD*2];
 
-	// string input_source( "/data/constantinos/Index/documentLengths" );
-	ifstream inputstream;
-	inputstream.open(this->docLenFileDir.c_str());
-	string curr_line_str;
-	string doc_id_s;
-	string doc_length_s;
-	int doc_id;
-	int doc_length;
-
-	while (getline(inputstream, curr_line_str)) {
-		string::iterator itr = curr_line_str.begin();
-		string::iterator start = itr;
-
-		//the first is doc id
-		while(itr != curr_line_str.end() && !isspace(*itr)){
-			++itr;
-		}
-
-		doc_id_s = string(start,itr);
-//			  cout<<"doc_id: "<<doc_id_s<<endl;
-		doc_id = atoi(doc_id_s.c_str());
-
-		start = itr + 1;
-		itr++;
-
-		//the second is doc length
-	    while (itr != curr_line_str.end()) {
-			++itr;
-	    }
-	    doc_length_s = string(start,itr);
-//			  cout<<"doc_length: "<<doc_length_s<<endl;
-	    doc_length = atoi(doc_length_s.c_str());
-
-	    doclen[doc_id] = doc_length;
+	/*load lex*/
+	FILE *flex = fopen(kGov2Lex.c_str(), "r");
+	if(fread( &num_terms, sizeof(int), 1, flex)!=1) {
+		std::cout << "trouble reading number of terms\n";
+		exit(0); // first int contains the # of terms in the entire collection
 	}
+	std::cout << "num of terms: "<< num_terms << std::endl;
 
-	inputstream.close();
+	lex_buffer = new uint[4*num_terms]; // read
+	if(fread(lex_buffer, sizeof(int), 4*num_terms, flex)!= 4*num_terms) {
+		std::cout << "trouble reading lex\n";
+		exit(0);
+	};
+	//now we have all our sizes in an inf_buffer. Let's partial sum them
+	lex_prefix = new uint[num_terms+1];
+	lex_prefix[0] = 0;
+	for(uint i=0; i<4*num_terms; i+=4)
+		lex_prefix[i/4+1] = (2*lex_buffer[i+1]*sizeof(unsigned int)) + lex_prefix[i/4];
+	fclose(flex);
 
-	cout<<"doclength is loaded"<<endl;
-	// for(int i = 0; i< 256; i++)
-	// 	doclen[ i + docn ] = 0;
+	/*load small word file*/
+	small_num_terms = 0;
+	FILE *fileword = fopen(kSmallWordTable.c_str(), "r");
+	if(fileword == NULL) {
+		std::cout << "trouble reading small gov2 word table\n";
+		exit(0);
+	}
+	char term[300];
+	int tid;
+	while(fscanf(fileword, "%s %d\n", term, &tid)!=EOF) {
+		string termName(term);
+		terms.push_back(termName);
+		tids.push_back(tid);
+		small_num_terms++;
+	}
+	fclose(fileword);
+
+	/*open the index*/
+	findex = fopen(kGov2Index.c_str(), "r");
 }
 
-void Gov2Reader::getDidTfs(RawIndexList& tList) {
-	size_t tid = tList.termId;
-	unsigned long listLen = listLen_[tid];
-	unsigned long listLenBytes = listLenBytes_[tid];
-	unsigned long offset = offset_[tid];
-
-	compressed_list = new unsigned char[listLenBytes];
-	uncompressed_list = new unsigned int[listLen*2];
-
-	FILE* F_InvertedIndex = fopen(this->cluewebIndex.c_str(),"r");
-	if( F_InvertedIndex == NULL ) cout << "Problem! The file: " << this->cluewebIndex << " could not be opened!" << endl;
-	//  	  else cout << "Loading from file: " << InvertedIndex << endl;
-	 fseek(F_InvertedIndex, offset, SEEK_SET);
-	 if(fread(compressed_list, 1, listLenBytes, F_InvertedIndex)){
-	 	decompressionVarBytes(compressed_list, uncompressed_list, listLen*2);
+void Gov2Reader::BuildPFDIndex(bool new_order){
+	 LoadIndex();
+	 if(new_order) {
+	 	LoadOrdering(kOrdering);
 	 }
-	 tList.doc_ids.reserve(listLen+CONSTS::BS);
-	 tList.freq_s.reserve(listLen+CONSTS::BS);
-
-	 for(unsigned int i=0; i<listLen; i++){
-//		 cout<<"doc_id: "<<tList.doc_ids.back()+uncompressed_list[2*i]<<" ";
-		 if(tList.doc_ids.size()!=0)
-		 tList.doc_ids.push_back(tList.doc_ids.back()+uncompressed_list[2*i]); //take care of the d-gap
-		 else
-	     tList.doc_ids.push_back(uncompressed_list[2*i]);
-//		 cout<<"freq: "<<uncompressed_list[2*i+1]<<endl;
-		 tList.freq_s.push_back(uncompressed_list[2*i+1]);
-
+	 cout << "Number of " << small_num_terms << " built for pdf index\n";
+	 for (size_t i=0; i< small_num_terms; i++){
+	 	RawIndexList Rlist = loadRawList(terms[i],tids[i],new_order);
+	 	CompressedList Clist(Rlist);
+	 	Clist.serializeToDb(kPFDIndex, sql);
 	 }
-
-	 tList.lengthOfList = listLen;
-	 fclose (F_InvertedIndex);
-	 delete compressed_list;
-	 delete uncompressed_list;
-
-	// cout<<"tid: "<<tid<<" listLen: "<<listLen<<endl;
+	 WriteOutNewLex();
 }
 
-void Gov2Reader::applyNewOrderingToDidTfs(RawIndexList& tList){
-  vector<qpRunnerPosting> postings;
-  for(uint i = 0; i < tList.doc_ids.size(); i++){
-    unordered_map<unsigned int, unsigned int>::iterator it;
-    it = this->newOrderMap.find(tList.doc_ids[i]);
-    uint newDid = 0;
-    if(it!=this->newOrderMap.end()){
-      newDid = this->newOrderMap[tList.doc_ids[i]];
-    }
-    else{
-    	tList.lengthOfList--;
-    	continue;
-      // newDid = tList.doc_ids[i];
-    }
-    qpRunnerPosting p(newDid, tList.freq_s[i]);
-    postings.push_back(p);
-  }
-  sort(postings.begin(), postings.end(), sortPostingQP);
-  tList.doc_ids.clear();
-  tList.freq_s.clear();
-  for(uint i = 0; i < postings.size(); i++){
-    tList.doc_ids.push_back(postings[i].did);
-    tList.freq_s.push_back(postings[i].freq);
-  }
-}
-
-void Gov2Reader::updateLex(RawIndexList& tList){
-	uint tid = tList.termId;
-	listLen_[tid] = tList.lengthOfList;
-}
-
-void Gov2Reader::writeOutNewLex(){
-	FILE * lexDir = fopen(this->pfdLex.c_str(), "w");
-	if( lexDir == NULL){
-	    cout << "Problem! The file: " << this->pfdLex << " could not be opened!" << endl;
+void Gov2Reader::WriteOutNewLex(){
+	FILE * lexDir = fopen(kPFDLex.c_str(), "w");
+	if(lexDir == NULL){
+	    cout << "Problem! The file: " << kPFDLex << " could not be opened!" << endl;
 	    exit(0);
 	}
-	for(int i = 0; i < this->numTerms; ++i){
-	    fprintf(lexDir, "%s %u %lu\n", this->termIDMap[i].c_str(), this->termid_[i], this->listLen_[i]);
+	// cout << kPFDLex << " opened\n";
+	for(int i = 0; i < small_num_terms; ++i){
+		// cout << terms[i] << " " << tids[i] << " " << list_len_map[tids[i]] << endl;
+	    fprintf(lexDir, "%s %u %u\n", terms[i].c_str(), tids[i], list_len_map[tids[i]]);
 	}
 	fclose(lexDir);
     cout << "pfd Lex generated" << endl;
+}
+
+void Gov2Reader::LoadOrdering(const std::string order_file){
+  FILE * file;
+  file = fopen(order_file.c_str(), "r"); //random
+  if( file == NULL) {
+    cout << "Problem! The file: " << order_file << " could not be opened!" << endl;
+    exit(0);
+  }
+  uint did = 0;
+  uint newDid = 0;
+  while(fscanf(file, "%d %d", &newDid, &did)!=EOF){
+    // cout << did << " " << newDid << endl;
+    order_map.insert(pair<int, int>(did, newDid));
+  }
+  cout <<"did mapping map size: " << order_map.size() <<endl;
+  fclose(file);
 }
 
 // Correct - unpadded score computation of BM25
 // Usage: it loads to a RawIndexList structure (vectors of scores, docids, freqs)
 // Input: term, term_id
 // Output: RawIndexList structure
-RawIndexList Gov2Reader::loadRawList(const std::string& term, size_t wid) {
+RawIndexList Gov2Reader::loadRawList(const std::string& term,
+	size_t wid, bool new_order) {
 	// arguments: term, term_id
 	BasicList basicList(term, wid);
 	RawIndexList rawList(basicList);
-
 	// Get docids, freqs for specific term
-	this->getDidTfs(rawList);
-
+	getDidTfs(rawList);
 	// apply new ordering
-	this->applyNewOrderingToDidTfs(rawList);
-
-	// update the listLength and generate the new lex
-	this->updateLex(rawList);
+	if(new_order) {
+		this->applyNewOrderingToDidTfs(rawList);
+		// update the listLength and generate the new lex
+		// this->updateLex(rawList);
+	}
 
 	// Rank all docids
 	rawList.rankWithBM25(doclen);
@@ -285,6 +143,80 @@ RawIndexList Gov2Reader::loadRawList(const std::string& term, size_t wid) {
     }
 	return rawList;
 }
+
+void Gov2Reader::LoadDocLength(int _docn){
+	docn = _docn; // CONSTS::MAXD Total # of documents in collection
+	doclen = new uint[docn + 256]();
+	FILE* fdl = fopen(kDocLenFile.c_str(), "r"); // open doc_len file
+	if(fdl == NULL) {
+		std::cout << "Can not open " << kDocLenFile << std::endl;
+		exit(0);
+	}
+
+	if( fread(doclen, sizeof(int), docn, fdl) != docn )
+		std::cout << "can not read doclen\n";
+	fclose(fdl);
+
+	// for(int i = 0; i< 256; i++)
+	// 	doclen[ i + docn ] = 0;
+
+	cout<<"doclength is loaded"<<endl;
+}
+
+void Gov2Reader::getDidTfs(RawIndexList& tList) {
+	uint tid = tList.termId;
+	assert(tid == lex_buffer[4*(tid-1)]);
+	uint listsize = lex_buffer[4*(tid-1) + 1];
+	list_len_map[tid] = listsize;
+	fseek(findex,lex_prefix[tid-1],SEEK_SET); //jump to the right position
+
+	if( (listsize*2)!= fread( hold_buffer, sizeof(int), listsize*2, findex )) {
+		cout << "can not read GOV2 index, abort\n";
+		exit(0);
+	}
+
+	tList.doc_ids.reserve(listsize+CONSTS::BS);
+	tList.freq_s.reserve(listsize+CONSTS::BS);
+
+	for(int i = 0 ;i < listsize; i++){
+		tList.doc_ids.push_back(hold_buffer[2*i] - 1);
+		tList.freq_s.push_back(hold_buffer[2*i + 1]);
+	}
+	tList.lengthOfList = listsize;
+}
+
+void Gov2Reader::applyNewOrderingToDidTfs(RawIndexList& tList){
+  vector<qpRunnerPosting> postings;
+  int new_did;
+  for(uint i = 0; i < tList.doc_ids.size(); i++){
+    unordered_map<int, int>::iterator it;
+    it = order_map.find(tList.doc_ids[i]);
+    if(it!=order_map.end()){
+      new_did= order_map[tList.doc_ids[i]];
+    }
+    else{
+    	tList.lengthOfList--;
+    	cout << "this should not happen for GOV2\n";
+    	exit(0);
+    	continue;
+      // newDid = tList.doc_ids[i];
+    }
+    qpRunnerPosting p(new_did, tList.freq_s[i]);
+    postings.push_back(p);
+  }
+  sort(postings.begin(), postings.end(), sortPostingQP);
+  tList.doc_ids.clear();
+  tList.freq_s.clear();
+  for(uint i = 0; i < postings.size(); i++){
+    tList.doc_ids.push_back(postings[i].did);
+    tList.freq_s.push_back(postings[i].freq);
+  }
+}
+
+// void Gov2Reader::updateLex(RawIndexList& tList){
+// 	uint tid = tList.termId;
+// 	list_len_map[tid] = tList.lengthOfList;
+// }
 
 int Gov2Reader::decompressionVarBytes(unsigned char* input, unsigned int* output, int size){
     unsigned char* curr_byte = input;
@@ -314,14 +246,6 @@ int Gov2Reader::decompressionVarBytes(unsigned char* input, unsigned int* output
 
 }
 
-Gov2Reader::~Gov2Reader(void){
-	delete[] doclen;
-	delete[] termid_;
-	delete[] listLen_;
-	delete[] offset_;
-	delete[] listLenBytes_;
-}
-
 // Print unsigned integer in binary format with spaces separating each byte.
 void Gov2Reader::printBinary(unsigned int num) {
 	 int arr[32];
@@ -337,35 +261,4 @@ void Gov2Reader::printBinary(unsigned int num) {
 	      printf(" ");
 	  }
 	  printf("\n");
-}
-
-void Gov2Reader::loadNewOrdering(){
-  FILE * lexFile;
-  lexFile = fopen(this->ordering.c_str(), "r"); //random
-  if( lexFile == NULL) {
-    cout << "Problem! The file: " << this->ordering << " could not be opened!" << endl;
-    exit(0);
-  }
-  uint did = 0;
-  uint newDid = 0;
-  while(fscanf(lexFile, "%u %u", &newDid, &did)!=EOF){
-    // cout << did << " " << newDid << endl;
-    this->newOrderMap.insert(pair<unsigned int, unsigned int>(did, newDid - 1));
-  }
-  cout <<"did mapping map size: " << this->newOrderMap.size() <<endl;
-  fclose(lexFile);
-}
-
-void Gov2Reader::buildPFDIndex(){
-	 this->loadDocLength();
-	 this->loadNewOrdering();
-	 for (size_t i=0; i< this->numTerms; i++){
-	 // for (size_t i=0; i< 10; i++){
-	 			   const string term = term_[i];
-	 			   size_t termid = termid_[i];
-	 			   RawIndexList Rlist = loadRawList(term_[i],i);
-	 			   CompressedList Clist(Rlist);
-	 			   Clist.serializeToDb(this->smallIndexDir, sql);
-	 }
-	 this->writeOutNewLex();
 }

@@ -110,6 +110,7 @@ std::vector<lptr> load(const std::string& where=""){
 	  lptr c;
 	  c.term = std::string((const char*)sqlite3_column_text(ppStmt, 0));
 	  c.cpool.setName(CONSTS::TERM_PATH + "/" + c.term);
+	  // cout << CONSTS::TERM_PATH + "/" + c.term << endl;
 	  c.info_leng = sqlite3_column_bytes(ppStmt, 1) / sizeof(unsigned int);
 	  getBlob(ppStmt,1,c.flag);
 	 // c.maxDidPerBlock = (unsigned int*) getBlob(ppStmt,2);
@@ -136,7 +137,7 @@ void termsCache::addSingleToCache(const std::string& term) {
 void termsCache::fill_cache(){
 	onDemandCpool::initPool(CONSTS::STORAGE_CAPACITY);
 	data = load();
-	COUT2<< "Loaded: " << data.size() << " index info items" << Log::endl;
+	cout << "Loaded: " << data.size() << " index info items" << endl;
 }
 
 void RawIndexList::rankWithBM25(unsigned int* doclen) {

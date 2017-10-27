@@ -34,7 +34,7 @@ public:
 	}
 
 
-	SqlProxy(std::string path=CONSTS::sqlPath) :db(0), ppStmt(0), dbname(path) {
+	SqlProxy(std::string path=kSqlPath) :db(0), ppStmt(0), dbname(path) {
 		  if(sqlite3_open(dbname.c_str(), &db) ) {
 			    CERR << "Can't open database: " << dbname << Log::endl;
 				throw 1;

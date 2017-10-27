@@ -8,8 +8,18 @@
 using namespace std;
 
 int main(int argc, char * argv[] ){
-   Gov2Reader* Reader  = new Gov2Reader(CONSTS::MAXD);
-   Reader->buildPFDIndex();
-   delete Reader;
-   return 0;
+   std::string option(argv[1]);
+   /*go without new order*/
+   if(option == "-go") {
+	   Gov2Reader Reader;
+	   bool order = false;
+	   Reader.BuildPFDIndex(order);
+   }
+
+   /*go with new order*/
+   if(option == "-goorder") {
+	   Gov2Reader Reader;
+	   bool order = true;
+	   Reader.BuildPFDIndex(order);
+   }
 }

@@ -1037,3 +1037,55 @@ void LMMaker::TransformLM(const string lex_path,
   lmFile.close();
   lmTermIDFile.close();
 }
+
+/*utils for gov2 dataset*/
+void Gov2Utils::LoadLex(){
+  cout << "loading word table for GOV2 index\n";
+  FILE* lexFile;
+  lexFile = fopen(kGov2WordTable.c_str(), "r");
+  if(lexFile == NULL) {
+    cout << "Can not open file: " << kGov2WordTable << endl;
+  }
+  char term[300];
+  uint termID;
+  while(fscanf(lexFile, "%s %u", term, &termID)!=EOF) {
+    string termName(term);
+    // cout << term << " " << termID << endl;
+    // this->lexMap.insert(pair<string, LexInfo>(termName, l));
+    lex_map.insert(pair<string, int>(termName, termID));
+  }
+  fclose(lexFile);
+  cout << "loading word table for GOV2 done\n";
+}
+
+void Gov2Utils::Gov2SmallLex(const string input_query, const string output_lex){
+  LoadLex();
+  cout << "start building small lex for GOV2" << endl;
+  FILE * queryFile = fopen(input_query.c_str(), "r");
+  if(queryFile == NULL){
+    cout << "Problem! The file: " << input_query << " could not be opened!" << endl; 
+  }
+
+  FILE * lexFile = fopen(output_lex.c_str(), "w");
+  if( lexFile == NULL){
+     cout << "Problem! The file: " << output_lex << " could not be opened!" << endl;
+     exit(0);
+  }
+
+  char term[ 1024 ];
+  while(fscanf(queryFile, "%s", term)!=EOF){
+    string tmp(term);
+    // printf("%s\n", term);
+    // cout << tmp << " ";
+    unordered_map<string, int>::iterator it;
+    it = lex_map.find(tmp);
+    if(it!=lex_map.end()) {
+      // cout << it->second.termId << " " << it->second.listLen << " " << it->second.offset << " " 
+      // << it->second.listLenInBytes << endl;
+      fprintf(lexFile, "%s %u\n", term, it->second);
+    }
+  }
+  fclose(queryFile);
+  fclose(lexFile);
+  cout << "GOV2 small lex building done" << endl;
+}

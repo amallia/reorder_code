@@ -164,8 +164,6 @@ public:
 language model and query related stuff
 ***************************************************************************/
 
-const string kFullQueryPath = "";
-
 const string kWholeLex = "/home/qw376/Info_Clueweb/lexikon.txt";
 // const string rawQuery = "/home/qw376/SIGIR2017/testQueries/1kRawQueries";
 const string kRawQuery = "/home/qw376/SIGIR2017/testQueries/toyQueries408";
@@ -181,6 +179,11 @@ const string kCommonTermFile = "/home/qw376/reorder_data/query/common_terms";
 const string kIdealLMPath = "/home/qw376/reorder_data/LM/ideal_lm";
 const string kLMWithTermID = "/home/qw376/reorder_data/LM/ideal_lm_termIDs";
 const string kTermTable = "/home/constantinos/Datasets/GOV2/word_file";
+//Gov2
+const string kGov2WordTable = "/home/constantinos/Datasets/GOV2/word_file";
+// const string kGov2Query = "/home/qw376/reorder_data/query/1kRandomQuery_1st";
+const string kGov2Query = "/home/qw376/reorder_data/query/cherry_queries";
+const string kGov2SmallLex = "/home/qw376/reorder_data/lexicon/gov2_small_lex_2nd";
 
 class LMMaker{ 
 	private:
@@ -209,4 +212,15 @@ class LMMaker{
 		void GenerateIdealLM(const string query_trace, const string lm_path);
 		void TransformLM(const string lex_path,
 			const string lm_path, const string lm_path_termID);
+
+};
+
+class Gov2Utils{
+private:
+	unordered_map<string, int> lex_map;
+
+public:	
+	/*build small lex for gov2*/
+	void LoadLex();
+	void Gov2SmallLex(const string query_trace, const string lex);
 };

@@ -119,61 +119,42 @@ namespace Log {
 
 };
 
+//input
+/*system*/
+// const std::string kGov2Index = "/home/constantinos/Datasets/GOV2/8_1.dat";
+// const std::string kGov2Lex = "/home/constantinos/Datasets/GOV2/8_1.inf";
+// const std::string kDocLenFile = "/home/constantinos/Datasets/GOV2/doclen_file";
+// const std::string kSmallWordTable = "/home/qw376/reorder_data/lexicon/gov2_small_lex_1st";
+
+/*url*/
+const std::string kGov2Index = "/home/constantinos/Datasets/GOV2/Sorted/8_1.dat_sorted";
+const std::string kGov2Lex = "/home/constantinos/Datasets/GOV2/8_1.inf";
+const std::string kDocLenFile = "/home/constantinos/Datasets/GOV2/Sorted/doclen_file_sorted";
+const std::string kSmallWordTable = "/home/qw376/reorder_data/lexicon/gov2_small_lex_2nd";
+
+/*ordering info*/
+const string kOrdering = "/home/qw376/reorder_data/ordering/ideal_ordering_1st";
+
+//output
+/*pdf index for url*/
+// const string kPFDIndex = "/home/qw376/reorder_data/gov2_pfd_index_url/"; 
+// const string kSqlPath = kPFDIndex + "indx.sqlite";
+// const string kPFDLex = "/home/qw376/reorder_data/gov2_pfd_lex/gov2_pfd_lex_url";
+
+/*pfd index for new ordering*/
+const string kPFDIndex = "/home/qw376/reorder_data/gov2_pfd_index_order_1st/"; 
+const string kSqlPath = kPFDIndex + "indx.sqlite";
+const string kPFDLex = "/home/qw376/reorder_data/gov2_pfd_lex/gov2_pfd_lex_order_1st";
+
 namespace CONSTS {
-
-	enum counters { CNT_EVICTIONS,
-		WAND,GETBLOCKSCORE,GETBLOCKSCORE1, BLOCKFAIL,ALIGN,MISALIGNED, GETFREQ, EVAL,HEAPIFY,HEAPIFYOK,NEXTGEQ,NEXTGEQ1,ALLQS,OTFBMG,
-		SKIPS, SKIPSB, DECODE, CAND, MISTRUST, ESSENTIAL, SHALLOWPOINTER, SHALLOWPOINTER1, SORT, DOCIDFILTER1, DOCIDFILTER2,
-		EARLYTERMINATION0, EARLYTERMINATION01, EARLYTERMINATION1, EARLYTERMINATION2, EARLYTERMINATION3, EARLYTERMINATION4, EARLYTERMINATION5,
-		NONESSENTIAL,STEP1, STEP2, STEP3, NOP };
-
-	const std::string trecRoot("/home/qw376/CIKM2017/smallIndexTSPLSHURL/"); //main index 
-	// const std::string trecRoot("/home/qw376/CIKM2017/smallIndexURL/"); //main index 
-	const std::string sqlPath(trecRoot+"indx.sqlite");
-
-
-	#define EXPECTED_BLOCKSIZE "64"
-	const int EXPECTED_BLOCK_SIZE(atoi(EXPECTED_BLOCKSIZE));
-
-
-	const std::string TERM_PATH(trecRoot+"pool");
-	const std::string FLAG_PATH(trecRoot+"flag");
-	const std::string MAX_PATH(trecRoot+"max");
-	const std::string SCORE_PATH(trecRoot+"score");
-	const std::string SIZE_PATH(trecRoot+"size");
-
-	const std::string GOOD_TERM_SUFFIX("_good");
-	const std::string BAD_TERM_SUFFIX("_bad");
-
-	const std::string INFO_INDEX("8_1.inf");
-	const std::string INDEX("8_1.dat");
-	const std::string SORTED("_sorted");
-	const std::string DOCUMENT_LENGTH("doclen_file");
-	const std::string MERGED_BOOL_PATH("merged_bool/");
-	const std::string WORD_FILE("/home/constantinos/Trec06_RawIndx/word_file");
-
-//	const int MAXD(25205179); //trec
-	const int MAXD(50220423); //clue_web
-//	const int MAXTERMS(32818983); //trec
-	const int MAXTERMS(86532822); //clue_web
-    const float AVGD(860.917); //clue_web
+	const int MAXD = 25205179; //GOV2
+	const int MAXTERMS(32818983); //GOV2
+    const float AVGD(130); //GOV2
 	const int MAXDBITS(25);
 	const int TOPK(500);
-	const unsigned int STORAGE_CAPACITY(218); //2187 -- the lowest value to have 0 evictions on our 1K queries sample
 	const int BS(64);
-
-	const unsigned int bitvector_size = 1<<15;
-
-	// Quantization
-	const int Quantization(255);
-
-	// Layering
-	const int LAYER_SPLIT_POSTINGS_THRESHOLD(4096); // 65536 : Version1 (BMW): 50000 // Version2: 4096
-	const float LAYER_SCORE_PARAMETER(0.25); // Version1 (BMW): 0.02  // Version2: 0.25  //0.5f // 0.25f
-
+	/*pfd*/
 	const double FRAC(0.10); //no idea what those two are...
-	const int S(16);
-
 };
 
 typedef	std::vector<unsigned int> vecUInt;

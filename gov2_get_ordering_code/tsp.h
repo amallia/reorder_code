@@ -10,11 +10,11 @@ namespace TspData{
 	const std::string kLex = "/home/qw376/reorder_data/compressed_doc_index/raw_gov2_doc_lex";
 	const std::string kForwardIndexVB = "/home/qw376/reorder_data/compressed_doc_index/vb_gov2_doc_index";
 	const std::string kLexVB = "/home/qw376/reorder_data/compressed_doc_index/vb_gov2_doc_lex";
-	const std::string kLM = "/home/qw376/reorder_data/LM/ideal_lm_termIDs";
+	const std::string kLM = "/home/qw376/reorder_data/LM/ideal_lm_termIDs_1st";
 	const std::string kOrdering = "/home/qw376/reorder_data/ordering/ideal_ordering";
 	const uint kNumGov2Docs = 25205179;
 	const uint kNumTerms = 32818983;
-	const uint kNumNbs = 100; 
+	const uint kNumNbs = 100;
 	const long long kSize = 6279431929; 
 	const long long kSizeVB = 7994112054;
 }

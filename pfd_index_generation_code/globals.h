@@ -131,7 +131,6 @@ namespace CONSTS {
 	// const std::string trecRoot("/home/qw376/CIKM2017/smallIndexURL/"); //main index 
 	const std::string sqlPath(trecRoot+"indx.sqlite");
 
-
 	#define EXPECTED_BLOCKSIZE "64"
 	const int EXPECTED_BLOCK_SIZE(atoi(EXPECTED_BLOCKSIZE));
 
@@ -152,9 +151,7 @@ namespace CONSTS {
 	const std::string MERGED_BOOL_PATH("merged_bool/");
 	const std::string WORD_FILE("/home/constantinos/Trec06_RawIndx/word_file");
 
-//	const int MAXD(25205179); //trec
 	const int MAXD(50220423); //clue_web
-//	const int MAXTERMS(32818983); //trec
 	const int MAXTERMS(86532822); //clue_web
     const float AVGD(860.917); //clue_web
 	const int MAXDBITS(25);
